@@ -36,7 +36,7 @@ export const eventConfig: Omit<EventConfig, "id" | "createdAt" | "updatedAt"> = 
   name: "AJZ 2026",
   date: "To be announced",
   venue: "To be announced",
-  video: "/videos/hero.mp4",
+  video: process.env.NEXT_PUBLIC_VIDEO_URL || "/videos/hero.mp4",
   heroImage: "/images/hero-poster.jpg",
   kicker: "Reunited in brotherhood",
   closingNote: "Your presence completes the frequency",
