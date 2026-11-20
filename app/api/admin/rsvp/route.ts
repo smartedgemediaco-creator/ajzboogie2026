@@ -48,7 +48,7 @@ export async function POST(request: Request) {
     name,
     phone,
     email,
-  });
+  }, false);
 
   if (isDuplicate) {
     return NextResponse.json(

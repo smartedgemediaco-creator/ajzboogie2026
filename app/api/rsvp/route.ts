@@ -3,9 +3,11 @@ import nodemailer from "nodemailer";
 import { Resend } from "resend";
 import {
   createRSVP,
+  acceptRSVP,
   getEvent,
   EVENT_SLUG,
   type EventConfig,
+  type RSVP,
 } from "@/lib/events";
 import { generateRSVPPdf } from "@/lib/rsvpPdf";
 
@@ -95,7 +97,24 @@ export async function POST(request: Request) {
     );
   }
 
-  const { isDuplicate } = await createRSVP({ eventSlug: slug, name, phone, email });
+  let rsvp: RSVP | null = null;
+  let isDuplicate = false;
+
+  if (invite) {
+    // Guest clicked "Accept Invitation" from email — mark existing pending record as accepted
+    rsvp = await acceptRSVP(email);
+    if (!rsvp) {
+      return NextResponse.json(
+        { error: "No pending invitation found for this email." },
+        { status: 404 }
+      );
+    }
+  } else {
+    // Direct RSVP form submission — accepted immediately
+    const result = await createRSVP({ eventSlug: slug, name, phone, email }, true);
+    rsvp = result.rsvp;
+    isDuplicate = result.isDuplicate;
+  }
 
   if (isDuplicate) {
     return NextResponse.json(

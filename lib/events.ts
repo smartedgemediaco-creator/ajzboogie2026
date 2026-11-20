@@ -22,9 +22,10 @@ export type RSVP = {
   phone: string;
   email: string;
   createdAt: Date;
+  accepted: boolean;
 };
 
-export type RSVPInput = Omit<RSVP, "id" | "createdAt">;
+export type RSVPInput = Omit<RSVP, "id" | "createdAt" | "accepted">;
 
 const sql = neon(process.env.DATABASE_URL!);
 
@@ -95,7 +96,7 @@ export async function ensureEventExists(): Promise<EventConfig> {
   }
 }
 
-export async function createRSVP(input: RSVPInput): Promise<{ rsvp: RSVP; isDuplicate: boolean }> {
+export async function createRSVP(input: RSVPInput, accepted: boolean = false): Promise<{ rsvp: RSVP; isDuplicate: boolean }> {
   const existing = await getRSVPByEmail(input.eventSlug, input.email);
   if (existing) {
     return { rsvp: existing, isDuplicate: true };
@@ -103,8 +104,8 @@ export async function createRSVP(input: RSVPInput): Promise<{ rsvp: RSVP; isDupl
 
   try {
     const rows = await sql`
-      INSERT INTO rsvps (event_slug, name, phone, email)
-      VALUES (${input.eventSlug}, ${input.name}, ${input.phone}, ${input.email})
+      INSERT INTO rsvps (event_slug, name, phone, email, accepted)
+      VALUES (${input.eventSlug}, ${input.name}, ${input.phone}, ${input.email}, ${accepted})
       RETURNING *
     `;
     return { rsvp: {
@@ -114,6 +115,7 @@ export async function createRSVP(input: RSVPInput): Promise<{ rsvp: RSVP; isDupl
       phone: rows[0].phone,
       email: rows[0].email,
       createdAt: new Date(rows[0].created_at),
+      accepted: rows[0].accepted,
     }, isDuplicate: false };
   } catch {
     return {
@@ -124,9 +126,31 @@ export async function createRSVP(input: RSVPInput): Promise<{ rsvp: RSVP; isDupl
         phone: input.phone,
         email: input.email,
         createdAt: new Date(),
+        accepted: false,
       },
       isDuplicate: false,
     };
+  }
+}
+
+export async function acceptRSVP(email: string): Promise<RSVP | null> {
+  try {
+    const rows = await sql`
+      UPDATE rsvps SET accepted = true WHERE email = ${email}
+      RETURNING *
+    `;
+    if (!rows[0]) return null;
+    return {
+      id: rows[0].id,
+      eventSlug: rows[0].event_slug,
+      name: rows[0].name,
+      phone: rows[0].phone,
+      email: rows[0].email,
+      createdAt: new Date(rows[0].created_at),
+      accepted: rows[0].accepted,
+    } as RSVP;
+  } catch {
+    return null;
   }
 }
 
@@ -143,6 +167,7 @@ export async function getRSVPByEmail(eventSlug: string, email: string): Promise<
       phone: rows[0].phone,
       email: rows[0].email,
       createdAt: new Date(rows[0].created_at),
+      accepted: rows[0].accepted,
     } as RSVP;
   } catch {
     return null;
@@ -159,6 +184,7 @@ export async function getRSVPs(): Promise<RSVP[]> {
       phone: row.phone as string,
       email: row.email as string,
       createdAt: new Date(row.created_at as string),
+      accepted: row.accepted as boolean,
     })) as RSVP[];
   } catch {
     return [];
@@ -175,7 +201,7 @@ export async function deleteRSVP(id: string): Promise<void> {
 
 export async function getRSVPCount(): Promise<number> {
   try {
-    const rows = await sql`SELECT COUNT(*) as count FROM rsvps WHERE event_slug = ${EVENT_SLUG}`;
+    const rows = await sql`SELECT COUNT(*) as count FROM rsvps WHERE event_slug = ${EVENT_SLUG} AND accepted = true`;
     return Number((rows[0] as { count: string | number })?.count ?? 0);
   } catch {
     return 0;

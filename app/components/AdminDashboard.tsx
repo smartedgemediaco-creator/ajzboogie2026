@@ -364,8 +364,12 @@ export default function AdminDashboardClient({ rsvps, count, eventDate, eventVen
                           </>
                         ) : "—"}
                       </td>
-                      <td className="px-6 py-4 text-sm text-green-400 font-medium">
-                        Accepted
+                      <td className="px-6 py-4 text-sm">
+                        {rsvp.accepted ? (
+                          <span className="text-green-400 font-medium">Accepted</span>
+                        ) : (
+                          <span className="text-yellow-400 font-medium">Pending</span>
+                        )}
                       </td>
                       <td className="px-6 py-4 text-center">
                         <button
