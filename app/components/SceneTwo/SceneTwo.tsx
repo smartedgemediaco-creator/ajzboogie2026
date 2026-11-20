@@ -69,10 +69,7 @@ export default function SceneTwo({
 
   const handleVideoError = useCallback(() => {
     setIsPlaying(false);
-    if (!hasCompletedOnce) {
-      startReleaseSequence();
-    }
-  }, [hasCompletedOnce, startReleaseSequence]);
+  }, []);
 
   const handleCanPlay = useCallback(() => {
     // Video is playable
