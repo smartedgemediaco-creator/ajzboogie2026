@@ -20,8 +20,8 @@ export default function SceneTwo({
   const [isFixed, setIsFixed] = useState(true);
   const [isReleasing, setIsReleasing] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [userStarted, setUserStarted] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
+  const [userStarted, setUserStarted] = useState(false);
   const releaseTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const startReleaseSequence = useCallback(() => {
@@ -82,13 +82,12 @@ export default function SceneTwo({
   }, []);
 
   const handleCanPlay = useCallback(() => {
-    // Try autoplay muted on first load
     if (!userStarted && !hasCompletedOnce) {
       const video = videoRef.current;
       if (video) {
         video.muted = true;
         video.play().then(() => setIsPlaying(true)).catch(() => {
-          // Autoplay blocked — play button will show
+          // Autoplay blocked (iOS) — play button shows
         });
       }
     }
@@ -125,7 +124,6 @@ export default function SceneTwo({
           className={styles.video}
           autoPlay
           playsInline
-          muted={isMuted}
           loop={false}
           onEnded={handleVideoEnd}
           onError={handleVideoError}
@@ -139,6 +137,22 @@ export default function SceneTwo({
 
         {!hasCompletedOnce && (
           <>
+            <button
+              onClick={handleToggleMute}
+              className={styles.muteButton}
+              aria-label={isMuted ? "Unmute" : "Mute"}
+            >
+              {isMuted ? (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                  <path d="M11 5L6 9l2 4V9l5 5v-3.5l4.5 4.5L19 8l-5-5zM19.5 4.5L17 12" />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                  <path d="M5 5h6.4M5 5h6a9 9 0 019 9v2.4M5 5v12c0 5.5 4.5 10 10 10h5.5M18 18h.01" />
+                </svg>
+              )}
+            </button>
+
             <button
               onClick={handlePlayPause}
               className={styles.playPauseButton}
@@ -156,24 +170,6 @@ export default function SceneTwo({
                 </svg>
               )}
             </button>
-
-            {!isMuted && (
-              <button
-                onClick={handleToggleMute}
-                className={styles.muteButton}
-                aria-label={isMuted ? "Unmute" : "Mute"}
-              >
-                {isMuted ? (
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                    <path d="M11 5L6 9l2 4V9l5 5v-3.5l4.5 4.5L19 8l-5-5zM19.5 4.5L17 12" />
-                  </svg>
-                ) : (
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                    <path d="M5 5h6.4M5 5h6a9 9 0 019 9v2.4M5 5v12c0 5.5 4.5 10 10 10h5.5M18 18h.01" />
-                  </svg>
-                )}
-              </button>
-            )}
           </>
         )}
       </motion.div>
