@@ -20,8 +20,6 @@ export default function SceneTwo({
   const [isFixed, setIsFixed] = useState(true);
   const [isReleasing, setIsReleasing] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
-  const [userStarted, setUserStarted] = useState(false);
   const releaseTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const startReleaseSequence = useCallback(() => {
@@ -52,11 +50,8 @@ export default function SceneTwo({
     setIsReleasing(false);
     setHasCompletedOnce(false);
     setIsFixed(true);
-    setUserStarted(false);
-    setIsMuted(true);
 
     video.currentTime = 0;
-    video.muted = true;
     video.play().then(() => setIsPlaying(true)).catch(() => {});
   }, []);
 
@@ -68,12 +63,7 @@ export default function SceneTwo({
       video.pause();
       setIsPlaying(false);
     } else {
-      video.muted = false;
-      setIsMuted(false);
-      video.play().then(() => {
-        setUserStarted(true);
-        setIsPlaying(true);
-      }).catch(() => {});
+      video.play().then(() => setIsPlaying(true)).catch(() => {});
     }
   }, [isPlaying]);
 
@@ -82,24 +72,16 @@ export default function SceneTwo({
   }, []);
 
   const handleCanPlay = useCallback(() => {
-    if (!userStarted && !hasCompletedOnce) {
+    // Try autoplay on mount; if blocked (iOS), play button shows
+    if (!hasCompletedOnce) {
       const video = videoRef.current;
       if (video) {
-        video.muted = true;
         video.play().then(() => setIsPlaying(true)).catch(() => {
-          // Autoplay blocked (iOS) — play button shows
+          // Autoplay blocked — play button shows
         });
       }
     }
-  }, [userStarted, hasCompletedOnce]);
-
-  const handleToggleMute = useCallback(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    video.muted = !video.muted;
-    setIsMuted(video.muted);
-  }, []);
+  }, [hasCompletedOnce]);
 
   useEffect(() => {
     return () => {
@@ -136,41 +118,23 @@ export default function SceneTwo({
         </video>
 
         {!hasCompletedOnce && (
-          <>
-            <button
-              onClick={handleToggleMute}
-              className={styles.muteButton}
-              aria-label={isMuted ? "Unmute" : "Mute"}
-            >
-              {isMuted ? (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                  <path d="M11 5L6 9l2 4V9l5 5v-3.5l4.5 4.5L19 8l-5-5zM19.5 4.5L17 12" />
-                </svg>
-              ) : (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                  <path d="M5 5h6.4M5 5h6a9 9 0 019 9v2.4M5 5v12c0 5.5 4.5 10 10 10h5.5M18 18h.01" />
-                </svg>
-              )}
-            </button>
-
-            <button
-              onClick={handlePlayPause}
-              className={styles.playPauseButton}
-              aria-label={isPlaying ? "Pause" : "Play"}
-              aria-pressed={isPlaying}
-            >
-              {isPlaying ? (
-                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <rect x="6" y="4" width="4" height="16" />
-                  <rect x="14" y="4" width="4" height="16" />
-                </svg>
-              ) : (
-                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <polygon points="5,3 19,12 5,21" />
-                </svg>
-              )}
-            </button>
-          </>
+          <button
+            onClick={handlePlayPause}
+            className={styles.playPauseButton}
+            aria-label={isPlaying ? "Pause" : "Play"}
+            aria-pressed={isPlaying}
+          >
+            {isPlaying ? (
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <rect x="6" y="4" width="4" height="16" />
+                <rect x="14" y="4" width="4" height="16" />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <polygon points="5,3 19,12 5,21" />
+              </svg>
+            )}
+          </button>
         )}
       </motion.div>
 
