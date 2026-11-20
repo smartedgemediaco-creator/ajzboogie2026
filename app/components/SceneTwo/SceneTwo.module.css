@@ -62,6 +62,35 @@
   height: 24px;
 }
 
+.muteButton {
+  position: absolute;
+  top: 1.5rem;
+  left: 1.5rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.muteButton:hover {
+  background: rgba(0, 0, 0, 0.8);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: scale(1.05);
+}
+
+.muteButton svg {
+  width: 20px;
+  height: 20px;
+}
+
 .replayControls {
   position: absolute;
   bottom: 3rem;
@@ -215,6 +244,18 @@
     transform: translate(-50%, -50%);
     width: 56px;
     height: 56px;
+  }
+
+  .muteButton {
+    top: 1rem;
+    left: 1rem;
+    width: 40px;
+    height: 40px;
+  }
+
+  .muteButton svg {
+    width: 18px;
+    height: 18px;
   }
 
   .replayButton {
