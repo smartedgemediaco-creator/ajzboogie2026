@@ -23,9 +23,10 @@ export type RSVP = {
   email: string;
   createdAt: Date;
   accepted: boolean;
+  whatsappSent: boolean;
 };
 
-export type RSVPInput = Omit<RSVP, "id" | "createdAt" | "accepted">;
+export type RSVPInput = Omit<RSVP, "id" | "createdAt" | "accepted" | "whatsappSent">;
 
 const sql = neon(process.env.DATABASE_URL!);
 
@@ -104,8 +105,8 @@ export async function createRSVP(input: RSVPInput, accepted: boolean = false): P
 
   try {
     const rows = await sql`
-      INSERT INTO rsvps (event_slug, name, phone, email, accepted)
-      VALUES (${input.eventSlug}, ${input.name}, ${input.phone}, ${input.email}, ${accepted})
+      INSERT INTO rsvps (event_slug, name, phone, email, accepted, whatsapp_sent)
+      VALUES (${input.eventSlug}, ${input.name}, ${input.phone}, ${input.email}, ${accepted}, false)
       RETURNING *
     `;
     return { rsvp: {
@@ -116,6 +117,7 @@ export async function createRSVP(input: RSVPInput, accepted: boolean = false): P
       email: rows[0].email,
       createdAt: new Date(rows[0].created_at),
       accepted: rows[0].accepted,
+      whatsappSent: rows[0].whatsapp_sent,
     }, isDuplicate: false };
   } catch {
     return {
@@ -127,6 +129,7 @@ export async function createRSVP(input: RSVPInput, accepted: boolean = false): P
         email: input.email,
         createdAt: new Date(),
         accepted: false,
+        whatsappSent: false,
       },
       isDuplicate: false,
     };
@@ -148,6 +151,7 @@ export async function acceptRSVP(email: string): Promise<RSVP | null> {
       email: rows[0].email,
       createdAt: new Date(rows[0].created_at),
       accepted: rows[0].accepted,
+      whatsappSent: rows[0].whatsapp_sent,
     } as RSVP;
   } catch {
     return null;
@@ -168,6 +172,7 @@ export async function getRSVPByEmail(eventSlug: string, email: string): Promise<
       email: rows[0].email,
       createdAt: new Date(rows[0].created_at),
       accepted: rows[0].accepted,
+      whatsappSent: rows[0].whatsapp_sent,
     } as RSVP;
   } catch {
     return null;
@@ -185,9 +190,51 @@ export async function getRSVPs(): Promise<RSVP[]> {
       email: row.email as string,
       createdAt: new Date(row.created_at as string),
       accepted: row.accepted as boolean,
+      whatsappSent: row.whatsapp_sent as boolean,
     })) as RSVP[];
   } catch {
     return [];
+  }
+}
+
+export async function markWhatsAppAsSent(email: string): Promise<void> {
+  try {
+    await sql`UPDATE rsvps SET whatsapp_sent = true WHERE email = ${email}`;
+  } catch {
+    // silently fail
+  }
+}
+
+export async function sendWhatsApp(to: string, message: string): Promise<{ success: boolean; error?: string }> {
+  const apiKey = process.env.SENDCHAMP_API_KEY;
+  const senderName = process.env.SENDCHAMP_SENDER_NAME || "AJZ 2026";
+
+  if (!apiKey) {
+    return { success: false, error: "SENDCHAMP_API_KEY not configured" };
+  }
+
+  try {
+    const res = await fetch("https://api.sendchamp.com/api/v1/whatsapp/send", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        to: [to],
+        message,
+        sender_name: senderName,
+        route: "international",
+      }),
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      return { success: true };
+    }
+    return { success: false, error: JSON.stringify(data) };
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
   }
 }
 

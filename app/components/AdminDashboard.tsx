@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, User, Mail, Calendar, Save } from "lucide-react";
+import { ArrowLeft, User, Mail, Calendar, Save, Send } from "lucide-react";
 import type { RSVP } from "@/lib/events";
 
 interface AdminDashboardClientProps {
@@ -25,6 +25,7 @@ export default function AdminDashboardClient({ rsvps, count, eventDate, eventVen
   const [messageType, setMessageType] = useState<"success" | "error">("success");
   const [rsvpList, setRsvpList] = useState(rsvps);
   const [revokeId, setRevokeId] = useState<string | null>(null);
+  const [whatsappId, setWhatsappId] = useState<string | null>(null);
 
   useEffect(() => {
     const token = document.cookie
@@ -139,6 +140,31 @@ export default function AdminDashboardClient({ rsvps, count, eventDate, eventVen
 
   const handleCancelRevoke = () => {
     setRevokeId(null);
+  };
+
+  const handleSendWhatsApp = async (id: string) => {
+    setWhatsappId(id);
+    setMessage("");
+
+    try {
+      const res = await fetch(`/api/admin/rsvp/${id}/whatsapp`, {
+        method: "PATCH",
+      });
+
+      if (res.ok) {
+        setMessageType("success");
+        setMessage("WhatsApp invitation sent.");
+        setRsvpList(rsvpList.map((r) => (r.id === id ? { ...r, whatsappSent: true } : r)));
+      } else {
+        setMessageType("error");
+        setMessage("Failed to send WhatsApp.");
+      }
+    } catch {
+      setMessageType("error");
+      setMessage("Something went wrong. Please try again.");
+    } finally {
+      setWhatsappId(null);
+    }
   };
 
   const handleLogout = () => {
@@ -273,7 +299,7 @@ export default function AdminDashboardClient({ rsvps, count, eventDate, eventVen
               </div>
                 <div className="p-3 bg-gray-500/10 rounded-lg text-gray-300">
                   <User className="h-6 w-6" />
-              </div>
+                </div>
             </div>
           </div>
 
@@ -332,6 +358,9 @@ export default function AdminDashboardClient({ rsvps, count, eventDate, eventVen
                   Status
                 </th>
                 <th className="px-6 py-4 text-xs tracking-widest uppercase text-gray-400 font-medium">
+                  WhatsApp
+                </th>
+                <th className="px-6 py-4 text-xs tracking-widest uppercase text-gray-400 font-medium">
                   Action
                 </th>
                 </tr>
@@ -339,7 +368,7 @@ export default function AdminDashboardClient({ rsvps, count, eventDate, eventVen
               <tbody>
                 {rsvpList.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                    <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
                       No RSVPs yet.
                     </td>
                   </tr>
@@ -370,6 +399,22 @@ export default function AdminDashboardClient({ rsvps, count, eventDate, eventVen
                         ) : (
                           <span className="text-yellow-400 font-medium">Pending</span>
                         )}
+                      </td>
+                      <td className="px-6 py-4 text-sm">
+                        {rsvp.whatsappSent ? (
+                          <span className="text-green-400 font-medium">Sent</span>
+                        ) : (
+                          <span className="text-yellow-400 font-medium">Pending</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <button
+                          onClick={() => handleSendWhatsApp(rsvp.id)}
+                          disabled={rsvp.whatsappSent}
+                          className="text-xs text-gray-300 hover:text-green-400 underline hover:underline"
+                        >
+                          Send WhatsApp
+                        </button>
                       </td>
                       <td className="px-6 py-4 text-center">
                         <button
