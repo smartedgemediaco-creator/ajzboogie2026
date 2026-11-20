@@ -20,28 +20,27 @@ const fadeUp = (delay: number = 0) => {
 export default function SceneThree({ data, initialCount }: { data: EventConfig; initialCount: number }) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [alreadySubmitted, setAlreadySubmitted] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const [rsvpCount, setRsvpCount] = useState(initialCount);
   const [inviteMode, setInviteMode] = useState(false);
-  const [inviteEmail, setInviteEmail] = useState("");
+  const [invitePhone, setInvitePhone] = useState("");
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
-    if (params.get("invite") === "1" && params.get("email")) {
+    if (params.get("invite") === "1" && params.get("phone")) {
       setInviteMode(true);
-      setInviteEmail(params.get("email")!);
-      setEmail(params.get("email")!);
+      setInvitePhone(params.get("phone")!);
+      setPhone(params.get("phone")!);
     }
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !email.trim() || sending) return;
+    if (!name.trim() || !phone.trim() || sending) return;
 
     setSending(true);
     setError("");
@@ -54,7 +53,6 @@ export default function SceneThree({ data, initialCount }: { data: EventConfig; 
           slug: data.slug,
           name: name.trim(),
           phone: phone.trim(),
-          email: email.trim(),
           invite: false,
         }),
       });
@@ -93,8 +91,7 @@ export default function SceneThree({ data, initialCount }: { data: EventConfig; 
         body: JSON.stringify({
           slug: data.slug,
           name: name.trim(),
-          phone: phone.trim(),
-          email: inviteEmail,
+          phone: invitePhone,
           invite: true,
         }),
       });
@@ -175,15 +172,12 @@ export default function SceneThree({ data, initialCount }: { data: EventConfig; 
               </p>
               {alreadySubmitted ? (
                 <p className={styles.confirmationSub}>
-                  We already have your RSVP, {name.trim() || inviteEmail}. No need to submit again.
+                  We already have your RSVP, {name.trim() || invitePhone}. No need to submit again.
                 </p>
               ) : (
                 <>
                   <p className={styles.confirmationSub}>
-                    Thank you, {name.trim() || inviteEmail}. We can&apos;t wait to share the night with you.
-                  </p>
-                  <p className={styles.confirmationJunk}>
-                    Check your junk/spam folder if you don&apos;t see it.
+                    Thank you, {name.trim() || invitePhone}. We can&apos;t wait to share the night with you.
                   </p>
                 </>
               )}
@@ -191,7 +185,7 @@ export default function SceneThree({ data, initialCount }: { data: EventConfig; 
           ) : inviteMode ? (
             <>
               <p className={styles.confirmationSub}>
-                You&apos;re invited, {inviteEmail}. Accept to confirm your spot.
+                You&apos;re invited, {invitePhone}. Accept to confirm your spot.
               </p>
               <form className={styles.form} onSubmit={(e) => {
                 e.preventDefault();
@@ -209,21 +203,6 @@ export default function SceneThree({ data, initialCount }: { data: EventConfig; 
                     placeholder="Your full name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    disabled={sending}
-                  />
-                </div>
-                <div className={styles.field}>
-                  <label htmlFor="rsvp-phone" className={styles.fieldLabel}>
-                    Phone Number (optional)
-                  </label>
-                  <input
-                    id="rsvp-phone"
-                    type="tel"
-                    autoComplete="tel"
-                    className={styles.input}
-                    placeholder="+234 800 000 0000"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
                     disabled={sending}
                   />
                 </div>
@@ -268,23 +247,6 @@ export default function SceneThree({ data, initialCount }: { data: EventConfig; 
                   placeholder="+234 800 000 0000"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  required
-                  disabled={sending}
-                />
-              </div>
-
-              <div className={styles.field}>
-                <label htmlFor="rsvp-email" className={styles.fieldLabel}>
-                  Email Address
-                </label>
-                <input
-                  id="rsvp-email"
-                  type="email"
-                  autoComplete="email"
-                  className={styles.input}
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
                   required
                   disabled={sending}
                 />

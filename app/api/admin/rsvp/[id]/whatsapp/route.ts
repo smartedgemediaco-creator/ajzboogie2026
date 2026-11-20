@@ -16,9 +16,6 @@ export async function PATCH(
   const { id } = await params;
 
   try {
-    // We need the guest's phone and name to send WhatsApp
-    // For now, we'll need to fetch the RSVP first
-    // But we don't have a getRSVPById function... let's use getRSVPs and find
     const rsvps = await getRSVPs();
     const rsvp = rsvps.find((r) => r.id === id);
 
@@ -26,7 +23,7 @@ export async function PATCH(
       return NextResponse.json({ error: "RSVP not found." }, { status: 404 });
     }
 
-    const whatsappMessage = `Hello ${rsvp.name}, you're invited to AJZ 2026! Confirm your attendance: https://ajzboogie2026.vercel.app/ajzboogie-2026?invite=1&email=${encodeURIComponent(rsvp.email)}`;
+    const whatsappMessage = `Hello ${rsvp.name}, you're invited to AJZ 2026! Confirm your attendance: https://ajzboogie2026.vercel.app/ajzboogie-2026?invite=1&phone=${encodeURIComponent(rsvp.phone)}`;
 
     const result = await sendWhatsApp(rsvp.phone, whatsappMessage);
 
@@ -34,7 +31,7 @@ export async function PATCH(
       return NextResponse.json({ error: result.error }, { status: 500 });
     }
 
-    await markWhatsAppAsSent(rsvp.email);
+    await markWhatsAppAsSent(rsvp.phone);
 
     return NextResponse.json({ ok: true });
   } catch {

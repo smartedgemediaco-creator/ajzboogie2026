@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, User, Mail, Calendar, Save, Send } from "lucide-react";
+import { ArrowLeft, User, Mail, Calendar, Save, Phone } from "lucide-react";
 import type { RSVP } from "@/lib/events";
 
 interface AdminDashboardClientProps {
@@ -18,7 +18,6 @@ export default function AdminDashboardClient({ rsvps, count, eventDate, eventVen
   const [venueInput, setVenueInput] = useState(eventVenue);
   const [inviteName, setInviteName] = useState("");
   const [invitePhone, setInvitePhone] = useState("");
-  const [inviteEmail, setInviteEmail] = useState("");
   const [inviting, setInviting] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
@@ -84,7 +83,6 @@ export default function AdminDashboardClient({ rsvps, count, eventDate, eventVen
         body: JSON.stringify({
           name: inviteName.trim(),
           phone: invitePhone.trim(),
-          email: inviteEmail.trim(),
         }),
       });
 
@@ -95,7 +93,6 @@ export default function AdminDashboardClient({ rsvps, count, eventDate, eventVen
         setMessage(`${inviteName} has been invited.`);
         setInviteName("");
         setInvitePhone("");
-        setInviteEmail("");
       } else {
         setMessageType("error");
         setMessage(data.error || "Failed to invite guest.");
@@ -142,6 +139,11 @@ export default function AdminDashboardClient({ rsvps, count, eventDate, eventVen
     setRevokeId(null);
   };
 
+  const handleLogout = () => {
+    document.cookie = "admin_token=; path=/; max-age=0";
+    router.push("/admin/login");
+  };
+
   const handleSendWhatsApp = async (id: string) => {
     setWhatsappId(id);
     setMessage("");
@@ -165,11 +167,6 @@ export default function AdminDashboardClient({ rsvps, count, eventDate, eventVen
     } finally {
       setWhatsappId(null);
     }
-  };
-
-  const handleLogout = () => {
-    document.cookie = "admin_token=; path=/; max-age=0";
-    router.push("/admin/login");
   };
 
   return (
@@ -227,13 +224,6 @@ export default function AdminDashboardClient({ rsvps, count, eventDate, eventVen
                 value={invitePhone}
                 onChange={(e) => setInvitePhone(e.target.value)}
                 placeholder="+234 800 000 0000"
-                className="w-full min-w-0 bg-[#1a1922] border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-[#d4af37] transition-colors"
-              />
-              <input
-                type="email"
-                value={inviteEmail}
-                onChange={(e) => setInviteEmail(e.target.value)}
-                placeholder="you@example.com"
                 className="w-full min-w-0 bg-[#1a1922] border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-[#d4af37] transition-colors"
               />
               <button
@@ -349,9 +339,6 @@ export default function AdminDashboardClient({ rsvps, count, eventDate, eventVen
                   Phone
                 </th>
                 <th className="px-6 py-4 text-xs tracking-widest uppercase text-gray-400 font-medium">
-                  Email
-                </th>
-                <th className="px-6 py-4 text-xs tracking-widest uppercase text-gray-400 font-medium">
                   RSVP Time
                 </th>
                 <th className="px-6 py-4 text-xs tracking-widest uppercase text-gray-400 font-medium">
@@ -368,7 +355,7 @@ export default function AdminDashboardClient({ rsvps, count, eventDate, eventVen
               <tbody>
                 {rsvpList.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
+                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
                       No RSVPs yet.
                     </td>
                   </tr>
@@ -380,9 +367,6 @@ export default function AdminDashboardClient({ rsvps, count, eventDate, eventVen
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-400">
                         {rsvp.phone}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-400">
-                        {rsvp.email}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500">
                         {rsvp.createdAt ? (

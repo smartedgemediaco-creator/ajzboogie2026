@@ -21,11 +21,10 @@ CREATE TABLE IF NOT EXISTS rsvps (
   event_slug VARCHAR(255) NOT NULL REFERENCES events(slug) ON DELETE CASCADE,
   name VARCHAR(255) NOT NULL,
   phone VARCHAR(50) NOT NULL,
-  email VARCHAR(255) NOT NULL,
   accepted BOOLEAN DEFAULT FALSE,
   whatsapp_sent BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE (event_slug, email)
+  UNIQUE (event_slug, phone)
 );
 
 CREATE INDEX IF NOT EXISTS idx_rsvps_event_slug ON rsvps(event_slug);

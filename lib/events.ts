@@ -20,7 +20,6 @@ export type RSVP = {
   eventSlug: string;
   name: string;
   phone: string;
-  email: string;
   createdAt: Date;
   accepted: boolean;
   whatsappSent: boolean;
@@ -98,15 +97,15 @@ export async function ensureEventExists(): Promise<EventConfig> {
 }
 
 export async function createRSVP(input: RSVPInput, accepted: boolean = false): Promise<{ rsvp: RSVP; isDuplicate: boolean }> {
-  const existing = await getRSVPByEmail(input.eventSlug, input.email);
+  const existing = await getRSVPByPhone(input.eventSlug, input.phone);
   if (existing) {
     return { rsvp: existing, isDuplicate: true };
   }
 
   try {
     const rows = await sql`
-      INSERT INTO rsvps (event_slug, name, phone, email, accepted, whatsapp_sent)
-      VALUES (${input.eventSlug}, ${input.name}, ${input.phone}, ${input.email}, ${accepted}, false)
+      INSERT INTO rsvps (event_slug, name, phone, accepted, whatsapp_sent)
+      VALUES (${input.eventSlug}, ${input.name}, ${input.phone}, ${accepted}, false)
       RETURNING *
     `;
     return { rsvp: {
@@ -114,7 +113,6 @@ export async function createRSVP(input: RSVPInput, accepted: boolean = false): P
       eventSlug: rows[0].event_slug,
       name: rows[0].name,
       phone: rows[0].phone,
-      email: rows[0].email,
       createdAt: new Date(rows[0].created_at),
       accepted: rows[0].accepted,
       whatsappSent: rows[0].whatsapp_sent,
@@ -126,7 +124,6 @@ export async function createRSVP(input: RSVPInput, accepted: boolean = false): P
         eventSlug: input.eventSlug,
         name: input.name,
         phone: input.phone,
-        email: input.email,
         createdAt: new Date(),
         accepted: false,
         whatsappSent: false,
@@ -136,10 +133,10 @@ export async function createRSVP(input: RSVPInput, accepted: boolean = false): P
   }
 }
 
-export async function acceptRSVP(email: string): Promise<RSVP | null> {
+export async function acceptRSVP(phone: string): Promise<RSVP | null> {
   try {
     const rows = await sql`
-      UPDATE rsvps SET accepted = true WHERE email = ${email}
+      UPDATE rsvps SET accepted = true WHERE phone = ${phone}
       RETURNING *
     `;
     if (!rows[0]) return null;
@@ -148,7 +145,6 @@ export async function acceptRSVP(email: string): Promise<RSVP | null> {
       eventSlug: rows[0].event_slug,
       name: rows[0].name,
       phone: rows[0].phone,
-      email: rows[0].email,
       createdAt: new Date(rows[0].created_at),
       accepted: rows[0].accepted,
       whatsappSent: rows[0].whatsapp_sent,
@@ -158,10 +154,10 @@ export async function acceptRSVP(email: string): Promise<RSVP | null> {
   }
 }
 
-export async function getRSVPByEmail(eventSlug: string, email: string): Promise<RSVP | null> {
+export async function getRSVPByPhone(eventSlug: string, phone: string): Promise<RSVP | null> {
   try {
     const rows = await sql`
-      SELECT * FROM rsvps WHERE event_slug = ${eventSlug} AND email = ${email} LIMIT 1
+      SELECT * FROM rsvps WHERE event_slug = ${eventSlug} AND phone = ${phone} LIMIT 1
     `;
     if (!rows[0]) return null;
     return {
@@ -169,7 +165,6 @@ export async function getRSVPByEmail(eventSlug: string, email: string): Promise<
       eventSlug: rows[0].event_slug,
       name: rows[0].name,
       phone: rows[0].phone,
-      email: rows[0].email,
       createdAt: new Date(rows[0].created_at),
       accepted: rows[0].accepted,
       whatsappSent: rows[0].whatsapp_sent,
@@ -187,7 +182,6 @@ export async function getRSVPs(): Promise<RSVP[]> {
       eventSlug: row.event_slug as string,
       name: row.name as string,
       phone: row.phone as string,
-      email: row.email as string,
       createdAt: new Date(row.created_at as string),
       accepted: row.accepted as boolean,
       whatsappSent: row.whatsapp_sent as boolean,
@@ -197,9 +191,9 @@ export async function getRSVPs(): Promise<RSVP[]> {
   }
 }
 
-export async function markWhatsAppAsSent(email: string): Promise<void> {
+export async function markWhatsAppAsSent(phone: string): Promise<void> {
   try {
-    await sql`UPDATE rsvps SET whatsapp_sent = true WHERE email = ${email}`;
+    await sql`UPDATE rsvps SET whatsapp_sent = true WHERE phone = ${phone}`;
   } catch {
     // silently fail
   }
