@@ -5,10 +5,9 @@ import { AnimatePresence } from "framer-motion";
 import type { EventConfig } from "@/lib/events";
 import IntroGate from "@/app/IntroGate";
 import SceneOne from "@/app/components/SceneOne/SceneOne";
-import SceneTwo from "@/app/components/SceneTwo/SceneTwo";
 import SceneThree from "@/app/components/SceneThree/SceneThree";
 
-type Stage = "intro" | "scene1" | "scene2";
+type Stage = "intro" | "scene1";
 
 const smoothScrollTo = (targetY: number, duration = 1500) => {
   const startY = window.scrollY;
@@ -47,7 +46,7 @@ export default function InviteExperience({
   const didScrollToSceneThreeRef = useRef(false);
 
   useEffect(() => {
-    if ((stage === "intro" || stage === "scene1" || stage === "scene2") && !scrollUnlocked) {
+    if ((stage === "intro" || stage === "scene1") && !scrollUnlocked) {
       document.body.classList.add("lock-scroll");
     } else {
       document.body.classList.remove("lock-scroll");
@@ -87,25 +86,11 @@ export default function InviteExperience({
         )}
 
         {stage === "scene1" && (
-          <SceneOne key="scene1" onFinish={() => setStage("scene2")} />
+          <SceneOne key="scene1" onFinish={() => setScrollUnlocked(true)} />
         )}
       </AnimatePresence>
 
-      {stage === "scene2" && (
-        <SceneTwo
-          key="scene2"
-          videoSrc={event.video}
-          onFirstVideoComplete={() => {}}
-          onRequestUnlock={() => {
-            setScrollUnlocked(true);
-          }}
-        />
-      )}
-
-      <div
-        ref={sceneThreeRef}
-        style={{ display: scrollUnlocked ? "block" : "none" }}
-      >
+      <div ref={sceneThreeRef}>
         <SceneThree data={event} initialCount={initialRsvpCount} />
       </div>
     </main>
