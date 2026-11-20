@@ -212,13 +212,19 @@ export default function AdminDashboardClient({ rsvps, count, eventDate, eventVen
               </div>
             </div>
             <form onSubmit={handleInviteGuest} className="flex flex-col gap-3 w-full min-w-0">
+              <label className="text-xs tracking-widest uppercase text-gray-400 mb-1">
+                Enter your name
+              </label>
               <input
                 type="text"
                 value={inviteName}
                 onChange={(e) => setInviteName(e.target.value)}
-                placeholder="Full Name"
+                placeholder="Enter your name"
                 className="w-full min-w-0 bg-[#1a1922] border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-[#d4af37] transition-colors"
               />
+              <label className="text-xs tracking-widest uppercase text-gray-400 mb-1 mt-2">
+                Enter your WhatsApp number
+              </label>
               <input
                 type="tel"
                 value={invitePhone}
