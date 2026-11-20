@@ -4,7 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "AJZ 2026 — You Are Invited",
   description: "Saturday, 15th November 2026 · The Grand Ballroom, Eko Hotel, Lagos",
-  metadataBase: new URL("https://gather.afara.tech"),
+  metadataBase: new URL("https://ajzboogie2026.vercel.app"),
 };
 
 export default function RootLayout({
