@@ -20,6 +20,7 @@ export default function SceneTwo({
   const [isFixed, setIsFixed] = useState(true);
   const [isReleasing, setIsReleasing] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [userStarted, setUserStarted] = useState(false);
   const releaseTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const startReleaseSequence = useCallback(() => {
@@ -62,7 +63,7 @@ export default function SceneTwo({
     if (isPlaying) {
       video.pause();
     } else {
-      video.play().catch(() => {});
+      video.play().then(() => setUserStarted(true)).catch(() => {});
     }
     setIsPlaying((p) => !p);
   }, [isPlaying]);
@@ -72,8 +73,16 @@ export default function SceneTwo({
   }, []);
 
   const handleCanPlay = useCallback(() => {
-    // Video is playable
-  }, []);
+    // Video is playable; attempt autoplay on mount
+    if (!userStarted && !hasCompletedOnce) {
+      const video = videoRef.current;
+      if (video) {
+        video.play().then(() => setIsPlaying(true)).catch(() => {
+          // Autoplay blocked (e.g. iOS) — play button will show
+        });
+      }
+    }
+  }, [userStarted, hasCompletedOnce]);
 
   useEffect(() => {
     return () => {
@@ -98,7 +107,6 @@ export default function SceneTwo({
           className={styles.video}
           autoPlay
           playsInline
-          muted
           loop={false}
           onEnded={handleVideoEnd}
           onError={handleVideoError}
