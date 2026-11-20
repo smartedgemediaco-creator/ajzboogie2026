@@ -19,7 +19,6 @@ export default function SceneTwo({
   const [hasCompletedOnce, setHasCompletedOnce] = useState(false);
   const [isFixed, setIsFixed] = useState(true);
   const [isReleasing, setIsReleasing] = useState(false);
-  const [videoError, setVideoError] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const releaseTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -69,7 +68,6 @@ export default function SceneTwo({
   }, [isPlaying]);
 
   const handleVideoError = useCallback(() => {
-    setVideoError(true);
     setIsPlaying(false);
     if (!hasCompletedOnce) {
       startReleaseSequence();
@@ -77,7 +75,7 @@ export default function SceneTwo({
   }, [hasCompletedOnce, startReleaseSequence]);
 
   const handleCanPlay = useCallback(() => {
-    setVideoError(false);
+    // Video is playable
   }, []);
 
   useEffect(() => {
@@ -85,55 +83,6 @@ export default function SceneTwo({
       if (releaseTimerRef.current) clearTimeout(releaseTimerRef.current);
     };
   }, []);
-
-  if (videoError) {
-    return (
-      <section
-        className={`${styles.sceneTwoContainer} ${isFixed ? styles.fixed : ""}`}
-        role="region"
-        aria-label="Video unavailable"
-      >
-        <div className={styles.fallbackContent}>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-          >
-            <svg
-              className={styles.fallbackIcon}
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              aria-hidden="true"
-            >
-              <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18" />
-              <line x1="7" y1="2" x2="7" y2="22" />
-              <line x1="17" y1="2" x2="17" y2="22" />
-              <line x1="2" y1="12" x2="22" y2="12" />
-              <line x1="2" y1="7" x2="7" y2="7" />
-              <line x1="2" y1="17" x2="7" y2="17" />
-              <line x1="17" y1="17" x2="22" y2="17" />
-              <line x1="17" y1="7" x2="22" y2="7" />
-            </svg>
-            <p className={styles.fallbackText}>Video unavailable</p>
-            <p className={styles.fallbackSubtext}>
-              Tap to continue to the invitation details
-            </p>
-          </motion.div>
-        </div>
-        {hasCompletedOnce && (
-          <button
-            onClick={handleReplay}
-            className={styles.retryButton}
-            aria-label="Retry video"
-          >
-            Try Again
-          </button>
-        )}
-      </section>
-    );
-  }
 
   return (
     <section
@@ -152,6 +101,7 @@ export default function SceneTwo({
           className={styles.video}
           autoPlay
           playsInline
+          muted
           loop={false}
           onEnded={handleVideoEnd}
           onError={handleVideoError}
