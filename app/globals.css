@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+@layer base {
+:root {
+  --font-marcellus: "Marcellus", serif;
+  --font-inter: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+  }
+
+  .lock-scroll {
+    overflow: hidden !important;
+    touch-action: none !important;
+    position: fixed !important;
+    width: 100% !important;
+  }
+
+  *::selection {
+    background: rgba(212, 175, 55, 0.3);
+    color: #f5efe6;
+  }
+
+  /* Date picker calendar icon - gold to match brand */
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1) sepia(1) saturate(5) hue-rotate(20deg);
+    cursor: pointer;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "name": "ajzboogie",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@neon/auth": "^0.8.2",
+    "@neon/realtime": "^0.2.1",
+    "@neondatabase/serverless": "^1.2.1",
+    "@tailwindcss/postcss": "^4.3.5",
+    "@types/pdfkit": "^0.17.7",
+    "clsx": "^2.1.1",
+    "framer-motion": "^14.14.0",
+    "lucide-react": "^1.77.0",
+    "next": "16.4.6",
+    "nodemailer": "^10.6.1",
+    "pdfkit": "^0.21.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "resend": "^6.39.0",
+    "tailwind-merge": "^3.7.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/turbopack": "4.3.3",
+    "@types/node": "^20",
+    "@types/nodemailer": "^8.0.2",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.4.6",
+    "tailwindcss": "4.3.3",
+    "typescript": "^5"
+  }
+}
