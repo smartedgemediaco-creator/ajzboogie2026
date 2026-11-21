@@ -258,7 +258,13 @@ export default function AdminDashboardClient({ rsvps, count, eventDate, eventVen
             <form onSubmit={handleSaveDate} className="flex flex-col gap-3 w-full min-w-0">
               <input
                 type="date"
-                value={dateInput}
+                value={
+                  dateInput &&
+                  !dateInput.toLowerCase().includes("to be announced") &&
+                  !dateInput.toLowerCase().includes("tbd")
+                    ? dateInput
+                    : ""
+                }
                 onChange={(e) => setDateInput(e.target.value)}
                 className="w-full min-w-0 bg-[#1a1922] border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-gray-500 transition-colors"
               />
