@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { sendWhatsApp, markWhatsAppAsSent, getRSVPs } from "@/lib/events";
+import { sendSMS, markSMSAsSent, getRSVPs } from "@/lib/events";
 
 export async function PATCH(
   request: Request,
@@ -23,18 +23,20 @@ export async function PATCH(
       return NextResponse.json({ error: "RSVP not found." }, { status: 404 });
     }
 
-    const whatsappMessage = `Hello ${rsvp.name}, you're invited to AJZ 2026! Confirm your attendance: https://ajzboogie2026.vercel.app/ajzboogie-2026?invite=1&phone=${encodeURIComponent(rsvp.phone)}`;
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://ajzboogie2026.vercel.app";
+    const confirmLink = `${siteUrl}/ajzboogie-2026?invite=1&phone=${encodeURIComponent(rsvp.phone)}`;
+    const smsMessage = `AJZ 2026: Hi ${rsvp.name}, you're invited. Confirm here: ${confirmLink}`;
 
-    const result = await sendWhatsApp(rsvp.phone, whatsappMessage);
+    const result = await sendSMS(rsvp.phone, smsMessage);
 
     if (!result.success) {
       return NextResponse.json({ error: result.error }, { status: 500 });
     }
 
-    await markWhatsAppAsSent(rsvp.phone);
+    await markSMSAsSent(rsvp.phone);
 
     return NextResponse.json({ ok: true });
   } catch {
-    return NextResponse.json({ error: "Failed to send WhatsApp." }, { status: 500 });
+    return NextResponse.json({ error: "Failed to send SMS." }, { status: 500 });
   }
 }

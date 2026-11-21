@@ -52,7 +52,7 @@ export async function POST(request: Request) {
   let isDuplicate = false;
 
   if (invite) {
-    // Guest clicked "Accept Invitation" from WhatsApp — mark existing pending record as accepted
+    // Guest clicked the invitation link — mark existing pending record as accepted
     rsvp = await acceptRSVP(phone);
     if (!rsvp) {
       return NextResponse.json(

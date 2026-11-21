@@ -90,6 +90,8 @@ Required variables:
 | `SMTP_PASS` | SMTP password / app-specific password |
 | `SMTP_SECURE` | `true` for SSL on 465, `false` for STARTTLS on 587 |
 | `ADMIN_PASSWORD` | Password for admin dashboard access |
+| `SENDLY_API_KEY` | Sendly NG API key in `publicKey.secret` format |
+| `SENDLY_SENDER_ID` | Approved Sender ID used for SMS invitations |
 
 ### 3. Set up the database
 

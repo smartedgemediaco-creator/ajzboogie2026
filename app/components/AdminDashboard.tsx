@@ -79,7 +79,7 @@ export default function AdminDashboardClient({
   const [status, setStatus] = useState<StatusFilter>("all");
   const [newestFirst, setNewestFirst] = useState(true);
   const [revokeId, setRevokeId] = useState<string | null>(null);
-  const [whatsappId, setWhatsappId] = useState<string | null>(null);
+  const [smsId, setSmsId] = useState<string | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const toastId = useRef(0);
 
@@ -102,7 +102,7 @@ export default function AdminDashboardClient({
 
   const confirmed = rsvpList.filter((guest) => guest.accepted).length;
   const pending = rsvpList.length - confirmed;
-  const delivered = rsvpList.filter((guest) => guest.whatsappSent).length;
+  const delivered = rsvpList.filter((guest) => guest.smsSent).length;
   const responseRate = rsvpList.length ? Math.round((confirmed / rsvpList.length) * 100) : 0;
 
   const visibleGuests = useMemo(() => {
@@ -199,25 +199,25 @@ export default function AdminDashboardClient({
     }
   };
 
-  const handleSendWhatsApp = async (guest: RSVP) => {
-    setWhatsappId(guest.id);
+  const handleSendSMS = async (guest: RSVP) => {
+    setSmsId(guest.id);
 
     try {
-      const res = await fetch(`/api/admin/rsvp/${guest.id}/whatsapp`, { method: "PATCH" });
+      const res = await fetch(`/api/admin/rsvp/${guest.id}/sms`, { method: "PATCH" });
 
       if (res.ok) {
         setRsvpList((current) =>
-          current.map((rsvp) => (rsvp.id === guest.id ? { ...rsvp, whatsappSent: true } : rsvp))
+          current.map((rsvp) => (rsvp.id === guest.id ? { ...rsvp, smsSent: true } : rsvp))
         );
-        notify(`WhatsApp invite sent to ${guest.name}.`);
+        notify(`SMS invite sent to ${guest.name}.`);
       } else {
         const data = await res.json().catch(() => null);
-        notify(data?.error || "Failed to send WhatsApp.", "error");
+        notify(data?.error || "Failed to send SMS.", "error");
       }
     } catch {
       notify("Something went wrong. Please try again.", "error");
     } finally {
-      setWhatsappId(null);
+      setSmsId(null);
     }
   };
 
@@ -239,13 +239,13 @@ export default function AdminDashboardClient({
     }
 
     const rows = [
-      ["Name", "Phone", "RSVP Date", "Status", "WhatsApp"],
+      ["Name", "Phone", "RSVP Date", "Status", "SMS"],
       ...visibleGuests.map((guest) => [
         guest.name,
         guest.phone,
         new Date(guest.createdAt).toISOString(),
         guest.accepted ? "Confirmed" : "Pending",
-        guest.whatsappSent ? "Sent" : "Pending",
+        guest.smsSent ? "Sent" : "Pending",
       ]),
     ];
     const csv = rows
@@ -290,7 +290,7 @@ export default function AdminDashboardClient({
       glow: "bg-white/5 text-white/60",
     },
     {
-      label: "WhatsApp sent",
+      label: "SMS sent",
       value: delivered,
       hint: `${rsvpList.length - delivered} still to send`,
       icon: MessageCircle,
@@ -508,7 +508,7 @@ export default function AdminDashboardClient({
                           )}
                         </td>
                         <td className="px-4 py-4">
-                          {guest.whatsappSent ? (
+                          {guest.smsSent ? (
                             <span className="inline-flex items-center gap-1.5 text-[11px] text-emerald-300/80">
                               <CheckCircle2 className="h-3.5 w-3.5" /> Sent
                             </span>
@@ -527,13 +527,13 @@ export default function AdminDashboardClient({
                               <Copy className="h-3.5 w-3.5" />
                             </button>
                             <button
-                              onClick={() => handleSendWhatsApp(guest)}
-                              disabled={guest.whatsappSent || whatsappId === guest.id}
-                              title="Send WhatsApp invite"
-                              aria-label="Send WhatsApp invite"
+                              onClick={() => handleSendSMS(guest)}
+                              disabled={guest.smsSent || smsId === guest.id}
+                              title="Send SMS invite"
+                              aria-label="Send SMS invite"
                               className="flex h-8 w-8 items-center justify-center rounded-lg text-white/35 transition hover:bg-emerald-400/10 hover:text-emerald-300 disabled:cursor-not-allowed disabled:opacity-25 disabled:hover:bg-transparent disabled:hover:text-white/35"
                             >
-                              <Send className={`h-3.5 w-3.5 ${whatsappId === guest.id ? "animate-pulse" : ""}`} />
+                              <Send className={`h-3.5 w-3.5 ${smsId === guest.id ? "animate-pulse" : ""}`} />
                             </button>
                             <button
                               onClick={() => setRevokeId(guest.id)}
@@ -581,7 +581,7 @@ export default function AdminDashboardClient({
                 </div>
                 <div>
                   <label className="mb-2 block text-[9px] uppercase tracking-[0.2em] text-white/40">
-                    WhatsApp number
+                    Phone number
                   </label>
                   <input
                     type="tel"

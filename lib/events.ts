@@ -22,10 +22,10 @@ export type RSVP = {
   phone: string;
   createdAt: Date;
   accepted: boolean;
-  whatsappSent: boolean;
+  smsSent: boolean;
 };
 
-export type RSVPInput = Omit<RSVP, "id" | "createdAt" | "accepted" | "whatsappSent">;
+export type RSVPInput = Omit<RSVP, "id" | "createdAt" | "accepted" | "smsSent">;
 
 const sql = neon(process.env.DATABASE_URL!);
 
@@ -115,7 +115,7 @@ export async function createRSVP(input: RSVPInput, accepted: boolean = false): P
       phone: rows[0].phone,
       createdAt: new Date(rows[0].created_at),
       accepted: rows[0].accepted,
-      whatsappSent: rows[0].whatsapp_sent,
+      smsSent: rows[0].whatsapp_sent,
     }, isDuplicate: false };
   } catch {
     return {
@@ -126,7 +126,7 @@ export async function createRSVP(input: RSVPInput, accepted: boolean = false): P
         phone: input.phone,
         createdAt: new Date(),
         accepted: false,
-        whatsappSent: false,
+        smsSent: false,
       },
       isDuplicate: false,
     };
@@ -147,7 +147,7 @@ export async function acceptRSVP(phone: string): Promise<RSVP | null> {
       phone: rows[0].phone,
       createdAt: new Date(rows[0].created_at),
       accepted: rows[0].accepted,
-      whatsappSent: rows[0].whatsapp_sent,
+      smsSent: rows[0].whatsapp_sent,
     } as RSVP;
   } catch {
     return null;
@@ -167,7 +167,7 @@ export async function getRSVPByPhone(eventSlug: string, phone: string): Promise<
       phone: rows[0].phone,
       createdAt: new Date(rows[0].created_at),
       accepted: rows[0].accepted,
-      whatsappSent: rows[0].whatsapp_sent,
+      smsSent: rows[0].whatsapp_sent,
     } as RSVP;
   } catch {
     return null;
@@ -184,14 +184,14 @@ export async function getRSVPs(): Promise<RSVP[]> {
       phone: row.phone as string,
       createdAt: new Date(row.created_at as string),
       accepted: row.accepted as boolean,
-      whatsappSent: row.whatsapp_sent as boolean,
+      smsSent: row.whatsapp_sent as boolean,
     })) as RSVP[];
   } catch {
     return [];
   }
 }
 
-export async function markWhatsAppAsSent(phone: string): Promise<void> {
+export async function markSMSAsSent(phone: string): Promise<void> {
   try {
     await sql`UPDATE rsvps SET whatsapp_sent = true WHERE phone = ${phone}`;
   } catch {
@@ -199,26 +199,28 @@ export async function markWhatsAppAsSent(phone: string): Promise<void> {
   }
 }
 
-export async function sendWhatsApp(to: string, message: string): Promise<{ success: boolean; error?: string }> {
-  const apiKey = process.env.SENDCHAMP_API_KEY;
-  const senderName = process.env.SENDCHAMP_SENDER_NAME || "AJZ 2026";
+export async function sendSMS(to: string, message: string): Promise<{ success: boolean; error?: string }> {
+  const apiKey = process.env.SENDLY_API_KEY;
+  const senderId = process.env.SENDLY_SENDER_ID || "AJZ 2026";
 
   if (!apiKey) {
-    return { success: false, error: "SENDCHAMP_API_KEY not configured" };
+    return { success: false, error: "SENDLY_API_KEY not configured" };
   }
 
   try {
-    const res = await fetch("https://api.sendchamp.com/api/v1/whatsapp/send", {
+    const res = await fetch("https://sendly.ng/api/v1/messages/send", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`,
+        "Idempotency-Key": crypto.randomUUID(),
       },
       body: JSON.stringify({
-        to: [to],
-        message,
-        sender_name: senderName,
-        route: "international",
+        channel: "sms",
+        senderId,
+        route: "TRANSACTIONAL",
+        recipient: to,
+        content: message,
       }),
     });
 
@@ -226,7 +228,7 @@ export async function sendWhatsApp(to: string, message: string): Promise<{ succe
     if (res.ok) {
       return { success: true };
     }
-    return { success: false, error: JSON.stringify(data) };
+    return { success: false, error: data?.error?.message || JSON.stringify(data) };
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
   }
