@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Check, Copy, Download } from "lucide-react";
+import { Check, Copy, Download, ExternalLink } from "lucide-react";
 import type { EventConfig } from "@/lib/events";
 import styles from "./SceneThree.module.css";
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
+const CREDIT_NAME = "Àfárà Digital Solutions";
 
 const fadeUp = (delay: number = 0) => {
   const transition = { delay, duration: 1.2, ease: EASE };
@@ -163,7 +164,22 @@ export default function SceneThree({ data, initialCount }: { data: EventConfig; 
 
       <div className={styles.inner}>
         <motion.p {...fadeUp(0.1)} className={styles.kicker}>
-          {data.kicker}
+          {data.kicker.split(CREDIT_NAME).map((part, index, parts) => (
+            <span key={index}>
+              {part}
+              {index < parts.length - 1 && (
+                <a
+                  href="https://afara.tech"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.creditLink}
+                >
+                  {CREDIT_NAME}
+                  <ExternalLink aria-hidden="true" />
+                </a>
+              )}
+            </span>
+          ))}
         </motion.p>
 
         <motion.h2 {...fadeUp(0.35)} className={styles.title}>
