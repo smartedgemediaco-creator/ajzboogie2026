@@ -320,7 +320,7 @@ export default function SceneThree({ data, initialCount }: { data: EventConfig; 
               preload="metadata"
             >
               <source
-                src={`https://res.cloudinary.com/oyp2arv8/video/upload/f_mp4,vc:h264,ac:aac,q_auto/v1795165754/Ajz_Boogie_renewed.mp4`}
+                src="https://res.cloudinary.com/oyp2arv8/video/upload/v1795165754/Ajz_Boogie_renewed.mp4"
                 type="video/mp4"
               />
               Your browser does not support the video tag.
