@@ -6,6 +6,7 @@ import {
   AlertTriangle,
   ArrowLeft,
   ArrowUpRight,
+  Axe,
   CalendarDays,
   Check,
   CheckCircle2,
@@ -20,7 +21,6 @@ import {
   RefreshCw,
   Search,
   Send,
-  Sparkles,
   Trash2,
   TrendingUp,
   UserPlus,
@@ -320,7 +320,7 @@ export default function AdminDashboardClient({
               <ArrowLeft className="h-4 w-4" />
             </button>
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#d4af37]/10 text-[#d4af37]">
-              <Sparkles className="h-4 w-4" />
+              <Axe className="h-4 w-4" />
             </div>
             <div className="min-w-0">
               <p className="truncate font-serif text-lg leading-none tracking-wide">AJZ 2026</p>

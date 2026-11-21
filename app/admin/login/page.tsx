@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { AlertCircle, ArrowLeft, ArrowRight, Lock, RefreshCw, ShieldCheck, Sparkles } from "lucide-react";
+import { AlertCircle, ArrowLeft, ArrowRight, Axe, Lock, RefreshCw, ShieldCheck } from "lucide-react";
 
 export default function AdminLogin() {
   const [password, setPassword] = useState("");
@@ -46,7 +46,7 @@ export default function AdminLogin() {
       <div className="relative w-full max-w-md">
         <div className="mb-8 text-center">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-[#d4af37]/25 bg-[#d4af37]/10 text-[#d4af37] shadow-[0_0_40px_rgba(212,175,55,0.12)]">
-            <Sparkles className="h-6 w-6" />
+            <Axe className="h-6 w-6" />
           </div>
           <h1 className="mt-5 font-serif text-4xl font-light tracking-[0.08em] text-[#d4af37]">AJZ 2026</h1>
           <p className="mt-3 flex items-center justify-center gap-3 text-[10px] uppercase tracking-[0.4em] text-white/40">
