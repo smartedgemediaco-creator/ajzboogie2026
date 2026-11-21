@@ -47,9 +47,12 @@ export default function SceneThree({ data, initialCount }: { data: EventConfig; 
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     if (params.get("invite") === "1" && params.get("phone")) {
-      setInviteMode(true);
-      setInvitePhone(params.get("phone")!);
-      setPhone(params.get("phone")!);
+      const invitePhoneParam = params.get("phone")!;
+      window.setTimeout(() => {
+        setInviteMode(true);
+        setInvitePhone(invitePhoneParam);
+        setPhone(invitePhoneParam);
+      }, 0);
     }
   }, []);
 

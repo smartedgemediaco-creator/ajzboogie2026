@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { getEvent, getRSVPCount, getRSVPs } from "@/lib/events";
+import { getEvent, getRSVPs } from "@/lib/events";
 import AdminDashboardClient from "@/app/components/AdminDashboard";
 
 export default async function AdminDashboardPage() {
@@ -11,7 +11,14 @@ export default async function AdminDashboardPage() {
     redirect("/admin/login");
   }
 
-  const [event, count, rsvps] = await Promise.all([getEvent(), getRSVPCount(), getRSVPs()]);
+  const [event, rsvps] = await Promise.all([getEvent(), getRSVPs()]);
 
-  return <AdminDashboardClient rsvps={rsvps} count={count} eventDate={event?.date ?? ""} eventVenue={event?.venue ?? ""} />;
+  return (
+    <AdminDashboardClient
+      rsvps={rsvps}
+      eventDate={event?.date ?? ""}
+      eventVenue={event?.venue ?? ""}
+      kicker={event?.kicker ?? ""}
+    />
+  );
 }
