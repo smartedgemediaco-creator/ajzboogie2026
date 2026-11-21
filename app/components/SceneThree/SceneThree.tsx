@@ -281,7 +281,7 @@ export default function SceneThree({ data, initialCount }: { data: EventConfig; 
 
         {/* Premium Gallery */}
         <motion.div {...fadeUp(1.2)} className={styles.gallerySection}>
-          <h2 className={styles.galleryTitle}>Gallery</h2>
+          <h2 className={styles.galleryTitle}>Moments Preserved</h2>
           <div className={styles.galleryGrid}>
             {galleryImages.map((src, i) => (
               <div
