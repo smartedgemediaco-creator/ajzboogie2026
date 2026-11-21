@@ -41,6 +41,7 @@ export default function SceneThree({ data, initialCount }: { data: EventConfig; 
   const [invitePhone, setInvitePhone] = useState("");
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [galleryIndex, setGalleryIndex] = useState(0);
+  const [videoPlaying, setVideoPlaying] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -310,21 +311,43 @@ export default function SceneThree({ data, initialCount }: { data: EventConfig; 
         <motion.div {...fadeUp(1.2)} className={styles.videoSection}>
           <h2 className={styles.galleryTitle}>Event Highlights</h2>
           <div className={styles.videoWrapper}>
-            <video
-              ref={null}
-              className={styles.video}
-              controls
-              playsInline
-              loop={true}
-              poster=""
-              preload="metadata"
-            >
-              <source
-                src="https://res.cloudinary.com/oyp2arv8/video/upload/v1795165754/Ajz_Boogie_renewed.mp4"
-                type="video/mp4"
-              />
-              Your browser does not support the video tag.
-            </video>
+            <div className={styles.videoContainer}>
+              <video
+                ref={null}
+                className={styles.video}
+                controls
+                playsInline
+                loop={true}
+                poster=""
+                preload="metadata"
+                onPlay={() => setVideoPlaying(true)}
+                onPause={() => setVideoPlaying(false)}
+                onEnded={() => setVideoPlaying(false)}
+              >
+                <source
+                  src="https://res.cloudinary.com/oyp2arv8/video/upload/v1795165754/Ajz_Boogie_renewed.mp4"
+                  type="video/mp4"
+                />
+                Your browser does not support the video tag.
+              </video>
+              {!videoPlaying && (
+                <button
+                  className={styles.videoPlayButton}
+                  onClick={() => {
+                    const video = document.querySelector("video");
+                    if (video) {
+                      video.play();
+                      setVideoPlaying(true);
+                    }
+                  }}
+                  aria-label="Play video"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                    <polygon points="7,5 19,12 7,19" />
+                  </svg>
+                </button>
+              )}
+              </div>
           </div>
           <p className={styles.videoCaption}>
             AJZ 2026 — Reunited in Brotherhood
