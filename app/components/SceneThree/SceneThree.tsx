@@ -17,6 +17,11 @@ const fadeUp = (delay: number = 0) => {
   };
 };
 
+const galleryImages = Array.from({ length: 10 }, (_, i) => {
+  const label = String.fromCharCode(97 + i); // a, b, c...
+  return `/images/aja/${label}a.jpg`;
+});
+
 export default function SceneThree({ data, initialCount }: { data: EventConfig; initialCount: number }) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -27,6 +32,8 @@ export default function SceneThree({ data, initialCount }: { data: EventConfig; 
   const [rsvpCount, setRsvpCount] = useState(initialCount);
   const [inviteMode, setInviteMode] = useState(false);
   const [invitePhone, setInvitePhone] = useState("");
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [galleryIndex, setGalleryIndex] = useState(0);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -265,9 +272,79 @@ export default function SceneThree({ data, initialCount }: { data: EventConfig; 
           )}
         </motion.div>
 
-        <motion.p {...fadeUp(1.5)} className={styles.closing}>
-          {data.closingNote}
-        </motion.p>
+        {/* Premium Gallery */}
+        <motion.div {...fadeUp(1.2)} className={styles.gallerySection}>
+          <h2 className={styles.galleryTitle}>Gallery</h2>
+          <div className={styles.galleryGrid}>
+            {galleryImages.map((src, i) => (
+              <div
+                key={i}
+                className={styles.galleryItem}
+                onClick={() => {
+                  setGalleryIndex(i);
+                  setGalleryOpen(true);
+                }}
+              >
+                <img
+                  src={src}
+                  alt={`AJB Oogie ${i + 1}`}
+                  className={styles.galleryImage}
+                  loading="lazy"
+                />
+                <div className={styles.galleryOverlay}>
+                  <span className={styles.galleryCount}>{i + 1} / {galleryImages.length}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Lightbox Modal */}
+        {galleryOpen && (
+          <div
+            className={styles.lightboxOverlay}
+            onClick={() => setGalleryOpen(false)}
+            onClickCapture={(e) => e.stopPropagation()}
+          >
+            <div className={styles.lightbox} onClick={(e) => e.stopPropagation()}>
+              <button
+                onClick={() => setGalleryOpen(false)}
+                className={styles.lightboxClose}
+                aria-label="Close"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+              </button>
+              <button
+                onClick={() => setGalleryIndex((i) => (i - 1 + galleryImages.length) % galleryImages.length)}
+                className={styles.lightboxPrev}
+                aria-label="Previous"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M15 18l-6-6 6-6" />
+                </svg>
+              </button>
+              <img
+                src={galleryImages[galleryIndex]}
+                alt={`Gallery ${galleryIndex + 1}`}
+                className={styles.lightboxImage}
+              />
+              <button
+                onClick={() => setGalleryIndex((i) => (i + 1) % galleryImages.length)}
+                className={styles.lightboxNext}
+                aria-label="Next"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M9 18l6-6-6-6" />
+                </svg>
+              </button>
+              <div className={styles.lightboxCaption}>
+                {galleryIndex + 1} / {galleryImages.length}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );
