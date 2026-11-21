@@ -465,8 +465,9 @@ export default function AdminDashboardClient({
                 </p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[760px] text-left">
+              <>
+                <div className="hidden overflow-x-auto md:block">
+                  <table className="w-full min-w-[720px] text-left">
                   <thead>
                     <tr className="border-b border-white/[0.06] bg-white/[0.015] text-[9px] uppercase tracking-[0.2em] text-white/35">
                       <th className="px-6 py-4 font-medium">Guest</th>
@@ -550,6 +551,86 @@ export default function AdminDashboardClient({
                   </tbody>
                 </table>
               </div>
+
+              <div className="grid gap-3 p-3 md:hidden">
+                {visibleGuests.map((guest) => (
+                  <article
+                    key={guest.id}
+                    className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-b from-white/[0.035] to-transparent p-4 transition hover:border-[#d4af37]/25"
+                  >
+                    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#d4af37]/25 to-transparent" />
+
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex min-w-0 items-center gap-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#d4af37]/20 bg-[#d4af37]/10 font-serif text-base text-[#d4af37]">
+                          {guest.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium text-white/90">{guest.name}</p>
+                          <p className="mt-0.5 text-[9px] uppercase tracking-[0.2em] text-white/30">AJZ 2026</p>
+                        </div>
+                      </div>
+                      {guest.accepted ? (
+                        <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2.5 py-1 text-[10px] font-medium text-emerald-300">
+                          <Check className="h-3 w-3" /> Confirmed
+                        </span>
+                      ) : (
+                        <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-amber-400/20 bg-amber-400/10 px-2.5 py-1 text-[10px] font-medium text-amber-300">
+                          <Clock3 className="h-3 w-3" /> Pending
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="mt-4 grid grid-cols-2 gap-4 rounded-xl border border-white/[0.05] bg-black/20 p-3">
+                      <div className="min-w-0">
+                        <p className="text-[9px] uppercase tracking-[0.2em] text-white/30">Phone</p>
+                        <p className="mt-1 truncate text-xs text-white/70">{guest.phone}</p>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[9px] uppercase tracking-[0.2em] text-white/30">RSVP date</p>
+                        <p className="mt-1 truncate text-xs text-white/70">{formatDate(guest.createdAt)}</p>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 flex items-center justify-between px-1">
+                      <span className="text-[9px] uppercase tracking-[0.2em] text-white/30">SMS invite</span>
+                      {guest.smsSent ? (
+                        <span className="inline-flex items-center gap-1.5 text-[11px] text-emerald-300/80">
+                          <CheckCircle2 className="h-3.5 w-3.5" /> Sent
+                        </span>
+                      ) : (
+                        <span className="text-[11px] text-white/30">Not sent</span>
+                      )}
+                    </div>
+
+                    <div className="mt-4 grid grid-cols-3 gap-2 border-t border-white/[0.06] pt-4">
+                      <button
+                        onClick={() => handleCopyLink(guest)}
+                        className="flex flex-col items-center gap-1.5 rounded-xl border border-white/[0.07] bg-white/[0.02] py-2.5 text-[9px] uppercase tracking-[0.12em] text-white/45 transition hover:border-[#d4af37]/30 hover:text-[#d4af37]"
+                      >
+                        <Copy className="h-3.5 w-3.5" />
+                        Copy link
+                      </button>
+                      <button
+                        onClick={() => handleSendSMS(guest)}
+                        disabled={guest.smsSent || smsId === guest.id}
+                        className="flex flex-col items-center gap-1.5 rounded-xl border border-white/[0.07] bg-white/[0.02] py-2.5 text-[9px] uppercase tracking-[0.12em] text-white/45 transition hover:border-emerald-400/30 hover:text-emerald-300 disabled:cursor-not-allowed disabled:border-white/[0.05] disabled:text-white/20"
+                      >
+                        <Send className={`h-3.5 w-3.5 ${smsId === guest.id ? "animate-pulse" : ""}`} />
+                        Send SMS
+                      </button>
+                      <button
+                        onClick={() => setRevokeId(guest.id)}
+                        className="flex flex-col items-center gap-1.5 rounded-xl border border-white/[0.07] bg-white/[0.02] py-2.5 text-[9px] uppercase tracking-[0.12em] text-white/45 transition hover:border-red-400/30 hover:text-red-300"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        Remove
+                      </button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+              </>
             )}
           </section>
 
