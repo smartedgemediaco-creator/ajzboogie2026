@@ -17,10 +17,17 @@ const fadeUp = (delay: number = 0) => {
   };
 };
 
-const galleryImages = Array.from({ length: 10 }, (_, i) => {
-  const label = String.fromCharCode(97 + i); // a, b, c...
-  return `https://res.cloudinary.com/oyp2arv8/image/upload/f_jpg,q_auto/v1795165754/${label}a.jpg`;
-});
+const galleryImages = [
+  "https://res.cloudinary.com/oyp2arv8/image/upload/v1795251878/1a.jpg",
+  "https://res.cloudinary.com/oyp2arv8/image/upload/v1795251877/2a.jpg",
+  "https://res.cloudinary.com/oyp2arv8/image/upload/v1795251878/3a.jpg",
+  "https://res.cloudinary.com/oyp2arv8/image/upload/v1795251878/4a.jpg",
+  "https://res.cloudinary.com/oyp2arv8/image/upload/v1795251878/6a.jpg",
+  "https://res.cloudinary.com/oyp2arv8/image/upload/v1795251878/7a.jpg",
+  "https://res.cloudinary.com/oyp2arv8/image/upload/v1795251878/8a.jpg",
+  "https://res.cloudinary.com/oyp2arv8/image/upload/v1795251879/9a.jpg",
+  "https://res.cloudinary.com/oyp2arv8/image/upload/v1795251879/10a.jpg",
+];
 
 export default function SceneThree({ data, initialCount }: { data: EventConfig; initialCount: number }) {
   const [name, setName] = useState("");
