@@ -332,8 +332,9 @@ export default function SceneThree({ data, initialCount }: { data: EventConfig; 
         {galleryOpen && (
           <div
             className={styles.lightboxOverlay}
-            onClick={() => setGalleryOpen(false)}
-            onClickCapture={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setGalleryOpen(false);
+            }}
           >
             <div className={styles.lightbox} onClick={(e) => e.stopPropagation()}>
               <button
