@@ -239,36 +239,67 @@ export async function markSMSAsSent(phone: string): Promise<void> {
   }
 }
 
-export async function sendSMS(to: string, message: string): Promise<{ success: boolean; error?: string }> {
-  const apiKey = process.env.SENDLY_API_KEY;
-  const senderId = process.env.SENDLY_SENDER_ID || "AJZ 2026";
+function normalizePhoneRecipient(phone: string): string {
+  const digits = phone.replace(/\D/g, "");
+  if (digits.startsWith("234")) return digits;
+  if (digits.startsWith("0") && digits.length === 11) return `234${digits.slice(1)}`;
+  if (digits.length === 10) return `234${digits}`;
+  return digits;
+}
 
+export async function sendSMS(to: string, message: string): Promise<{ success: boolean; error?: string }> {
+  const username = process.env.EBULKSMS_USERNAME;
+  const apiKey = process.env.EBULKSMS_API_KEY;
+  const senderId = process.env.EBULKSMS_SENDER_ID || "AJZ2026";
+
+  if (!username) {
+    return { success: false, error: "EBULKSMS_USERNAME not configured" };
+  }
   if (!apiKey) {
-    return { success: false, error: "SENDLY_API_KEY not configured" };
+    return { success: false, error: "EBULKSMS_API_KEY not configured" };
   }
 
   try {
-    const res = await fetch("https://sendly.ng/api/v1/messages/send", {
+    const res = await fetch("https://api.ebulksms.com/sendsms.json", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-        "Idempotency-Key": crypto.randomUUID(),
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        channel: "sms",
-        senderId,
-        route: "TRANSACTIONAL",
-        recipient: to,
-        content: message,
+        SMS: {
+          auth: { username, apikey: apiKey },
+          message: { sender: senderId, messagetext: message, flash: "0" },
+          recipients: {
+            gsm: [{ msidn: normalizePhoneRecipient(to), msgid: crypto.randomUUID() }],
+          },
+          dndsender: "0",
+        },
       }),
     });
 
-    const data = await res.json();
-    if (res.ok) {
+    const data = await res.json().catch(() => null);
+    const statusKey = typeof data?.response?.status === "string" ? data.response.status : "";
+
+    if (res.ok && statusKey === "SUCCESS") {
       return { success: true };
     }
-    return { success: false, error: data?.error?.message || JSON.stringify(data) };
+
+    const friendlyErrors: Record<string, string> = {
+      AUTH_FAILURE: "EbulkSMS username or API key is incorrect.",
+      MISSING_USERNAME: "EBULKSMS_USERNAME is missing.",
+      MISSING_APIKEY: "EBULKSMS_API_KEY is missing.",
+      MISSING_SENDER: "EBULKSMS_SENDER_ID is missing.",
+      INVALID_SENDER: "EbulkSMS sender name is invalid.",
+      INVALID_RECIPIENT: "The phone number is invalid.",
+      INVALID_MESSAGE: "The SMS message is invalid or too long.",
+      INSUFFICIENT_CREDIT: "EbulkSMS wallet balance is too low.",
+    };
+
+    return {
+      success: false,
+      error:
+        friendlyErrors[statusKey] ||
+        statusKey ||
+        (data ? JSON.stringify(data) : `EbulkSMS request failed with status ${res.status}.`),
+    };
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
   }

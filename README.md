@@ -90,8 +90,9 @@ Required variables:
 | `SMTP_PASS` | SMTP password / app-specific password |
 | `SMTP_SECURE` | `true` for SSL on 465, `false` for STARTTLS on 587 |
 | `ADMIN_PASSWORD` | Password for admin dashboard access |
-| `SENDLY_API_KEY` | Sendly NG API key in `publicKey.secret` format |
-| `SENDLY_SENDER_ID` | Approved Sender ID used for SMS invitations |
+| `EBULKSMS_USERNAME` | EbulkSMS login email |
+| `EBULKSMS_API_KEY` | EbulkSMS API key |
+| `EBULKSMS_SENDER_ID` | Sender name for SMS invitations, e.g. `AJZ2026` (max 11 alphanumeric characters) |
 
 ### 3. Set up the database
 
