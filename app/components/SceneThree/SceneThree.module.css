@@ -539,21 +539,7 @@
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-  padding: 4px;
-  background: linear-gradient(135deg, #d4af37, #c49a2a, #0b0d13, #d4af37);
-  background-size: 200% 200%;
-  animation: goldGlow 4s ease infinite;
-}
-
-.videoContainer::before {
-  content: "";
-  position: absolute;
-  inset: -2px;
-  border-radius: 18px;
-  background: linear-gradient(135deg, #d4af37, #c49a2a);
-  z-index: -1;
-  opacity: 0.6;
-  animation: pulseGold 3s ease-in-out infinite;
+  padding: 0 8px;
 }
 
 .video {
@@ -561,6 +547,26 @@
   height: auto;
   display: block;
   aspect-ratio: 16 / 9;
+}
+
+.videoContainer::before,
+.videoContainer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  background: linear-gradient(180deg, #d4af37, #c49a2a, #0b0d13, #c49a2a, #d4af37);
+  background-size: 100% 200%;
+  animation: goldGlow 4s ease infinite;
+}
+
+.videoContainer::before {
+  left: -8px;
+}
+
+.videoContainer::after {
+  right: -8px;
 }
 
 .videoCaption {
@@ -577,12 +583,17 @@
   .videoContainer {
     width: 100%;
     border-radius: 12px;
-    padding: 3px;
+    padding: 0 4px;
   }
 
-  .videoContainer::before {
-    inset: -1px;
-    border-radius: 14px;
+  .videoContainer::before,
+  .videoContainer::after {
+    width: 4px;
+    left: -4px;
+    right: -4px;
+    top: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, #d4af37, #c49a2a);
   }
 
   .video {
