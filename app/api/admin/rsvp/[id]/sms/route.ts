@@ -25,7 +25,8 @@ export async function PATCH(
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://ajzboogie2026.vercel.app";
     const confirmLink = `${siteUrl}/ajzboogie-2026?invite=1&phone=${encodeURIComponent(rsvp.phone)}`;
-    const smsMessage = `AJZ 2026: Hi ${rsvp.name}, you're invited. Confirm here: ${confirmLink}`;
+    const firstName = rsvp.name.trim().split(/\s+/)[0] || "there";
+    const smsMessage = `AJZ 2026: Hi ${firstName}, brotherhood & good food await. Confirm: ${confirmLink}`;
 
     const result = await sendSMS(rsvp.phone, smsMessage);
 

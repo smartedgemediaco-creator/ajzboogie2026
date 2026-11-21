@@ -789,7 +789,7 @@ export default function AdminDashboardClient({
                     required
                     value={invitePhone}
                     onChange={(e) => setInvitePhone(e.target.value)}
-                    placeholder="+234 800 000 0000"
+                    placeholder="080 1234 5678"
                     className={inputClass}
                   />
                 </div>
