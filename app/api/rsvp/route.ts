@@ -1,20 +1,5 @@
 import { NextResponse } from "next/server";
-import {
-  createRSVP,
-  acceptRSVP,
-  getEvent,
-  EVENT_SLUG,
-  type EventConfig,
-  type RSVP,
-} from "@/lib/events";
-
-const escapeHtml = (value: string) =>
-  value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
+import { createRSVP, acceptRSVP, getEvent, EVENT_SLUG, type RSVP } from "@/lib/events";
 
 export async function POST(request: Request) {
   let body: { slug?: string; name?: string; phone?: string; invite?: boolean };
@@ -69,10 +54,20 @@ export async function POST(request: Request) {
 
   if (isDuplicate) {
     return NextResponse.json(
-      { ok: false, error: "You have already RSVP'd for this event." },
+      {
+        ok: false,
+        error: "You have already RSVP'd for this event.",
+        code: rsvp?.inviteCode ?? null,
+        name: rsvp?.name ?? name,
+      },
       { status: 409 }
     );
   }
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({
+    ok: true,
+    code: rsvp?.inviteCode ?? null,
+    name: rsvp?.name ?? name,
+    phone: rsvp?.phone ?? phone,
+  });
 }

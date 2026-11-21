@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { Check, Copy, Download } from "lucide-react";
 import type { EventConfig } from "@/lib/events";
 import styles from "./SceneThree.module.css";
 
@@ -42,6 +43,8 @@ export default function SceneThree({ data, initialCount }: { data: EventConfig; 
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [galleryIndex, setGalleryIndex] = useState(0);
   const [videoPlaying, setVideoPlaying] = useState(false);
+  const [inviteCode, setInviteCode] = useState("");
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -55,6 +58,17 @@ export default function SceneThree({ data, initialCount }: { data: EventConfig; 
       }, 0);
     }
   }, []);
+
+  const handleCopyCode = async () => {
+    if (!inviteCode) return;
+    try {
+      await navigator.clipboard.writeText(inviteCode);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2500);
+    } catch {
+      setCopied(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,6 +92,7 @@ export default function SceneThree({ data, initialCount }: { data: EventConfig; 
       if (!res.ok) {
         const errData = await res.json().catch(() => null);
         if (res.status === 409) {
+          if (errData?.code) setInviteCode(errData.code);
           setAlreadySubmitted(true);
           setSending(false);
           return;
@@ -85,6 +100,8 @@ export default function SceneThree({ data, initialCount }: { data: EventConfig; 
         throw new Error(errData?.error || "Something went wrong.");
       }
 
+      const responseData = await res.json();
+      if (responseData?.code) setInviteCode(responseData.code);
       setSubmitted(true);
     } catch (err) {
       setError(
@@ -117,6 +134,7 @@ export default function SceneThree({ data, initialCount }: { data: EventConfig; 
       if (!res.ok) {
         const errData = await res.json().catch(() => null);
         if (res.status === 409) {
+          if (errData?.code) setInviteCode(errData.code);
           setAlreadySubmitted(true);
           setSending(false);
           return;
@@ -124,6 +142,8 @@ export default function SceneThree({ data, initialCount }: { data: EventConfig; 
         throw new Error(errData?.error || "Something went wrong.");
       }
 
+      const responseData = await res.json();
+      if (responseData?.code) setInviteCode(responseData.code);
       setSubmitted(true);
     } catch (err) {
       setError(
@@ -193,11 +213,37 @@ export default function SceneThree({ data, initialCount }: { data: EventConfig; 
                   We already have your RSVP, {name.trim() || invitePhone}. No need to submit again.
                 </p>
               ) : (
-                <>
-                  <p className={styles.confirmationSub}>
-                    Thank you, {name.trim() || invitePhone}. We can&apos;t wait to share the night with you.
+                <p className={styles.confirmationSub}>
+                  Thank you, {name.trim() || invitePhone}. We can&apos;t wait to share the night with you.
+                </p>
+              )}
+
+              {inviteCode && (
+                <div className={styles.codeCard}>
+                  <p className={styles.codeLabel}>Your invite code</p>
+                  <p className={styles.codeValue}>{inviteCode}</p>
+                  <p className={styles.codeHint}>
+                    Copy this code and keep it safe — it is your personal entry pass.
                   </p>
-                </>
+                  <div className={styles.codeActions}>
+                    <button
+                      type="button"
+                      onClick={handleCopyCode}
+                      className={styles.copyButton}
+                    >
+                      {copied ? <Check size={15} /> : <Copy size={15} />}
+                      {copied ? "Copied!" : "Copy code"}
+                    </button>
+                    <a
+                      href={`/api/rsvp/pdf?code=${encodeURIComponent(inviteCode)}`}
+                      download
+                      className={styles.pdfButton}
+                    >
+                      <Download size={15} />
+                      Download PDF pass
+                    </a>
+                  </div>
+                </div>
               )}
             </motion.div>
           ) : inviteMode ? (

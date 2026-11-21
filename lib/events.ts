@@ -1,3 +1,4 @@
+import { randomBytes } from "crypto";
 import { neon } from "@neondatabase/serverless";
 
 export type EventConfig = {
@@ -23,13 +24,19 @@ export type RSVP = {
   createdAt: Date;
   accepted: boolean;
   smsSent: boolean;
+  inviteCode: string | null;
 };
 
-export type RSVPInput = Omit<RSVP, "id" | "createdAt" | "accepted" | "smsSent">;
+export type RSVPInput = Omit<RSVP, "id" | "createdAt" | "accepted" | "smsSent" | "inviteCode">;
 
 const sql = neon(process.env.DATABASE_URL!);
 
 export const EVENT_SLUG = "ajzboogie-2026";
+
+function generateInviteCode(): string {
+  const hex = randomBytes(4).toString("hex").toUpperCase();
+  return `AJZ26-${hex.slice(0, 4)}-${hex.slice(4, 8)}`;
+}
 
 export const eventConfig: Omit<EventConfig, "id" | "createdAt" | "updatedAt"> = {
   slug: EVENT_SLUG,
@@ -104,8 +111,8 @@ export async function createRSVP(input: RSVPInput, accepted: boolean = false): P
 
   try {
     const rows = await sql`
-      INSERT INTO rsvps (event_slug, name, phone, accepted, whatsapp_sent)
-      VALUES (${input.eventSlug}, ${input.name}, ${input.phone}, ${accepted}, false)
+      INSERT INTO rsvps (event_slug, name, phone, accepted, whatsapp_sent, invite_code)
+      VALUES (${input.eventSlug}, ${input.name}, ${input.phone}, ${accepted}, false, ${accepted ? generateInviteCode() : null})
       RETURNING *
     `;
     return { rsvp: {
@@ -116,6 +123,7 @@ export async function createRSVP(input: RSVPInput, accepted: boolean = false): P
       createdAt: new Date(rows[0].created_at),
       accepted: rows[0].accepted,
       smsSent: rows[0].whatsapp_sent,
+      inviteCode: rows[0].invite_code,
     }, isDuplicate: false };
   } catch {
     return {
@@ -127,6 +135,7 @@ export async function createRSVP(input: RSVPInput, accepted: boolean = false): P
         createdAt: new Date(),
         accepted: false,
         smsSent: false,
+        inviteCode: null,
       },
       isDuplicate: false,
     };
@@ -136,7 +145,9 @@ export async function createRSVP(input: RSVPInput, accepted: boolean = false): P
 export async function acceptRSVP(phone: string): Promise<RSVP | null> {
   try {
     const rows = await sql`
-      UPDATE rsvps SET accepted = true WHERE phone = ${phone}
+      UPDATE rsvps
+      SET accepted = true, invite_code = COALESCE(invite_code, ${generateInviteCode()})
+      WHERE phone = ${phone}
       RETURNING *
     `;
     if (!rows[0]) return null;
@@ -148,6 +159,7 @@ export async function acceptRSVP(phone: string): Promise<RSVP | null> {
       createdAt: new Date(rows[0].created_at),
       accepted: rows[0].accepted,
       smsSent: rows[0].whatsapp_sent,
+      inviteCode: rows[0].invite_code,
     } as RSVP;
   } catch {
     return null;
@@ -168,6 +180,7 @@ export async function getRSVPByPhone(eventSlug: string, phone: string): Promise<
       createdAt: new Date(rows[0].created_at),
       accepted: rows[0].accepted,
       smsSent: rows[0].whatsapp_sent,
+      inviteCode: rows[0].invite_code,
     } as RSVP;
   } catch {
     return null;
@@ -185,9 +198,36 @@ export async function getRSVPs(): Promise<RSVP[]> {
       createdAt: new Date(row.created_at as string),
       accepted: row.accepted as boolean,
       smsSent: row.whatsapp_sent as boolean,
+      inviteCode: (row.invite_code as string | null) ?? null,
     })) as RSVP[];
   } catch {
     return [];
+  }
+}
+
+export async function getRSVPByCode(code: string): Promise<RSVP | null> {
+  const cleanCode = code.trim().toUpperCase();
+  if (!cleanCode) return null;
+
+  try {
+    const rows = await sql`
+      SELECT * FROM rsvps
+      WHERE event_slug = ${EVENT_SLUG} AND UPPER(invite_code) = ${cleanCode}
+      LIMIT 1
+    `;
+    if (!rows[0]) return null;
+    return {
+      id: rows[0].id,
+      eventSlug: rows[0].event_slug,
+      name: rows[0].name,
+      phone: rows[0].phone,
+      createdAt: new Date(rows[0].created_at),
+      accepted: rows[0].accepted,
+      smsSent: rows[0].whatsapp_sent,
+      inviteCode: rows[0].invite_code,
+    } as RSVP;
+  } catch {
+    return null;
   }
 }
 

@@ -287,6 +287,97 @@
   margin-top: 0.75rem;
 }
 
+.codeCard {
+  max-width: 430px;
+  margin: 1.75rem auto 0;
+  padding: 1.5rem 1.25rem;
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: 14px;
+  background: linear-gradient(160deg, rgba(212, 175, 55, 0.1), rgba(11, 13, 19, 0.55));
+  text-align: center;
+}
+
+.codeLabel {
+  font-family: var(--font-inter);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: #d4af37;
+}
+
+.codeValue {
+  font-family: var(--font-inter);
+  font-size: clamp(1.3rem, 5vw, 1.85rem);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: #f5efe6;
+  margin: 0.7rem 0;
+  word-break: break-all;
+}
+
+.codeHint {
+  font-family: var(--font-inter);
+  font-size: 0.8rem;
+  line-height: 1.6;
+  color: rgba(245, 239, 230, 0.55);
+}
+
+.codeActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.65rem;
+  margin-top: 1.25rem;
+}
+
+.copyButton,
+.pdfButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex: 1 1 170px;
+  min-height: 2.9rem;
+  padding: 0.75rem 1rem;
+  border-radius: 9px;
+  font-family: var(--font-inter);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.copyButton {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  color: #f5efe6;
+}
+
+.copyButton:hover {
+  background: rgba(212, 175, 55, 0.12);
+}
+
+.pdfButton {
+  background: linear-gradient(135deg, #d4af37 0%, #c49a2a 100%);
+  border: 1px solid transparent;
+  color: #0b0d13;
+}
+
+.pdfButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
+}
+
+@media (max-width: 480px) {
+  .codeActions {
+    flex-direction: column;
+  }
+}
+
 .closing {
   text-align: center;
   font-family: var(--font-marcellus);

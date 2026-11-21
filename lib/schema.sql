@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS rsvps (
   phone VARCHAR(50) NOT NULL,
   accepted BOOLEAN DEFAULT FALSE,
   whatsapp_sent BOOLEAN DEFAULT FALSE,
+  invite_code VARCHAR(32) UNIQUE,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE (event_slug, phone)
 );

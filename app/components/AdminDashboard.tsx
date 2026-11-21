@@ -7,6 +7,8 @@ import {
   ArrowLeft,
   ArrowUpRight,
   Axe,
+  ChevronLeft,
+  ChevronRight,
   CalendarDays,
   Check,
   CheckCircle2,
@@ -15,12 +17,14 @@ import {
   Download,
   ExternalLink,
   Inbox,
+  KeyRound,
   LogOut,
   MapPin,
   MessageCircle,
   RefreshCw,
   Search,
   Send,
+  ShieldCheck,
   Trash2,
   TrendingUp,
   UserPlus,
@@ -81,7 +85,13 @@ export default function AdminDashboardClient({
   const [revokeId, setRevokeId] = useState<string | null>(null);
   const [smsId, setSmsId] = useState<string | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [page, setPage] = useState(1);
+  const [verifyCode, setVerifyCode] = useState("");
+  const [verifyResult, setVerifyResult] = useState<RSVP | null>(null);
+  const [verifyError, setVerifyError] = useState("");
+  const [verifying, setVerifying] = useState(false);
   const toastId = useRef(0);
+  const pageSize = 10;
 
   useEffect(() => {
     const token = document.cookie
@@ -113,13 +123,23 @@ export default function AdminDashboardClient({
         (guest) =>
           !search ||
           guest.name.toLowerCase().includes(search) ||
-          guest.phone.toLowerCase().includes(search)
+          guest.phone.toLowerCase().includes(search) ||
+          (guest.inviteCode ?? "").toLowerCase().includes(search)
       )
       .sort((a, b) => {
         const diff = new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
         return newestFirst ? diff : -diff;
       });
   }, [rsvpList, query, status, newestFirst]);
+
+  const totalPages = Math.max(1, Math.ceil(visibleGuests.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const paginatedGuests = visibleGuests.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+  const rangeStart = visibleGuests.length ? (currentPage - 1) * pageSize + 1 : 0;
+  const rangeEnd = Math.min(currentPage * pageSize, visibleGuests.length);
 
   const handleSaveEvent = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -232,6 +252,16 @@ export default function AdminDashboardClient({
     }
   };
 
+  const handleCopyCode = async (code: string) => {
+    if (!code) return;
+    try {
+      await navigator.clipboard.writeText(code);
+      notify(`Invite code ${code} copied.`);
+    } catch {
+      notify("Could not copy the invite code.", "error");
+    }
+  };
+
   const handleExport = () => {
     if (!visibleGuests.length) {
       notify("There are no guests to export.", "error");
@@ -239,10 +269,11 @@ export default function AdminDashboardClient({
     }
 
     const rows = [
-      ["Name", "Phone", "RSVP Date", "Status", "SMS"],
+      ["Name", "Phone", "Invite Code", "RSVP Date", "Status", "SMS"],
       ...visibleGuests.map((guest) => [
         guest.name,
         guest.phone,
+        guest.inviteCode ?? "",
         new Date(guest.createdAt).toISOString(),
         guest.accepted ? "Confirmed" : "Pending",
         guest.smsSent ? "Sent" : "Pending",
@@ -265,6 +296,33 @@ export default function AdminDashboardClient({
     router.refresh();
     notify("Guest list refreshed.");
     window.setTimeout(() => setRefreshing(false), 700);
+  };
+
+  const handleVerifyCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setVerifying(true);
+    setVerifyError("");
+    setVerifyResult(null);
+
+    try {
+      const res = await fetch("/api/admin/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: verifyCode }),
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        setVerifyResult(data.rsvp as RSVP);
+        notify("Invite code verified.");
+      } else {
+        setVerifyError(data.error || "No guest matches this code.");
+      }
+    } catch {
+      setVerifyError("Something went wrong. Please try again.");
+    } finally {
+      setVerifying(false);
+    }
   };
 
   const handleLogout = () => {
@@ -412,7 +470,8 @@ export default function AdminDashboardClient({
                 <div>
                   <h2 className="font-serif text-xl font-light">Guest list</h2>
                   <p className="mt-1 text-xs text-white/40">
-                    {visibleGuests.length} of {rsvpList.length} guests shown
+                    Showing {rangeStart}–{rangeEnd} of {visibleGuests.length} guests
+                    {visibleGuests.length !== rsvpList.length && ` (${rsvpList.length} total)`}
                   </p>
                 </div>
                 <button
@@ -429,8 +488,11 @@ export default function AdminDashboardClient({
                   <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/30" />
                   <input
                     value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Search by name or phone…"
+                    onChange={(e) => {
+                      setQuery(e.target.value);
+                      setPage(1);
+                    }}
+                    placeholder="Search by name or phone or code…"
                     className={`${inputClass} pl-10`}
                   />
                 </div>
@@ -438,7 +500,10 @@ export default function AdminDashboardClient({
                   {(["all", "confirmed", "pending"] as StatusFilter[]).map((option) => (
                     <button
                       key={option}
-                      onClick={() => setStatus(option)}
+                      onClick={() => {
+                        setStatus(option);
+                        setPage(1);
+                      }}
                       className={`rounded-lg px-3 py-2 text-[10px] font-medium uppercase tracking-[0.14em] transition ${
                         status === option
                           ? "bg-[#d4af37]/15 text-[#d4af37]"
@@ -472,6 +537,7 @@ export default function AdminDashboardClient({
                     <tr className="border-b border-white/[0.06] bg-white/[0.015] text-[9px] uppercase tracking-[0.2em] text-white/35">
                       <th className="px-6 py-4 font-medium">Guest</th>
                       <th className="px-4 py-4 font-medium">Phone</th>
+                      <th className="px-4 py-4 font-medium">Invite code</th>
                       <th className="px-4 py-4 font-medium">RSVP date</th>
                       <th className="px-4 py-4 font-medium">Status</th>
                       <th className="px-4 py-4 font-medium">Invite</th>
@@ -479,7 +545,7 @@ export default function AdminDashboardClient({
                     </tr>
                   </thead>
                   <tbody>
-                    {visibleGuests.map((guest) => (
+                    {paginatedGuests.map((guest) => (
                       <tr
                         key={guest.id}
                         className="border-b border-white/[0.04] transition hover:bg-white/[0.025]"
@@ -496,6 +562,20 @@ export default function AdminDashboardClient({
                           </div>
                         </td>
                         <td className="px-4 py-4 text-xs text-white/55">{guest.phone}</td>
+                        <td className="px-4 py-4">
+                          {guest.inviteCode ? (
+                            <button
+                              onClick={() => handleCopyCode(guest.inviteCode ?? "")}
+                              title="Copy invite code"
+                              className="inline-flex items-center gap-1.5 rounded-lg border border-[#d4af37]/20 bg-[#d4af37]/[0.07] px-2 py-1 font-mono text-[10px] tracking-wide text-[#d4af37] transition hover:border-[#d4af37]/50"
+                            >
+                              {guest.inviteCode}
+                              <Copy className="h-3 w-3" />
+                            </button>
+                          ) : (
+                            <span className="text-[11px] text-white/25">Not accepted</span>
+                          )}
+                        </td>
                         <td className="px-4 py-4 text-xs text-white/45">{formatDate(guest.createdAt)}</td>
                         <td className="px-4 py-4">
                           {guest.accepted ? (
@@ -553,7 +633,7 @@ export default function AdminDashboardClient({
               </div>
 
               <div className="grid gap-3 p-3 md:hidden">
-                {visibleGuests.map((guest) => (
+                {paginatedGuests.map((guest) => (
                   <article
                     key={guest.id}
                     className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-b from-white/[0.035] to-transparent p-4 transition hover:border-[#d4af37]/25"
@@ -589,6 +669,20 @@ export default function AdminDashboardClient({
                       <div className="min-w-0">
                         <p className="text-[9px] uppercase tracking-[0.2em] text-white/30">RSVP date</p>
                         <p className="mt-1 truncate text-xs text-white/70">{formatDate(guest.createdAt)}</p>
+                      </div>
+                      <div className="col-span-2 min-w-0 border-t border-white/[0.05] pt-3">
+                        <p className="text-[9px] uppercase tracking-[0.2em] text-white/30">Invite code</p>
+                        {guest.inviteCode ? (
+                          <button
+                            onClick={() => handleCopyCode(guest.inviteCode ?? "")}
+                            className="mt-1 inline-flex items-center gap-2 font-mono text-xs tracking-wide text-[#d4af37]"
+                          >
+                            {guest.inviteCode}
+                            <Copy className="h-3 w-3" />
+                          </button>
+                        ) : (
+                          <p className="mt-1 text-xs text-white/25">Not accepted yet</p>
+                        )}
                       </div>
                     </div>
 
@@ -628,8 +722,34 @@ export default function AdminDashboardClient({
                       </button>
                     </div>
                   </article>
-                ))}
-              </div>
+                 ))}
+               </div>
+
+              {totalPages > 1 && (
+                <div className="flex flex-col items-center justify-between gap-3 border-t border-white/[0.06] px-5 py-4 sm:flex-row sm:px-6">
+                  <p className="text-[10px] uppercase tracking-[0.16em] text-white/35">
+                    Page {currentPage} of {totalPages}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setPage((current) => Math.max(1, current - 1))}
+                      disabled={currentPage === 1}
+                      className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-white/10 px-3 text-[10px] uppercase tracking-[0.16em] text-white/55 transition hover:border-[#d4af37]/40 hover:text-[#d4af37] disabled:cursor-not-allowed disabled:opacity-30"
+                    >
+                      <ChevronLeft className="h-3.5 w-3.5" />
+                      Previous
+                    </button>
+                    <button
+                      onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+                      disabled={currentPage === totalPages}
+                      className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-white/10 px-3 text-[10px] uppercase tracking-[0.16em] text-white/55 transition hover:border-[#d4af37]/40 hover:text-[#d4af37] disabled:cursor-not-allowed disabled:opacity-30"
+                    >
+                      Next
+                      <ChevronRight className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </div>
+              )}
               </>
             )}
           </section>
@@ -678,6 +798,66 @@ export default function AdminDashboardClient({
                   {inviting ? "Adding…" : "Add guest"}
                 </button>
               </form>
+            </section>
+
+            <section className={`${cardClass} p-5 sm:p-6`}>
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-400/10 text-sky-300">
+                  <KeyRound className="h-5 w-5" />
+                </div>
+                <div>
+                  <h2 className="font-serif text-lg font-light">Verify a code</h2>
+                  <p className="text-[11px] text-white/40">Check a guest at the door</p>
+                </div>
+              </div>
+
+              <form onSubmit={handleVerifyCode} className="mt-5 space-y-3">
+                <div>
+                  <label className="mb-2 block text-[9px] uppercase tracking-[0.2em] text-white/40">
+                    Invite code
+                  </label>
+                  <input
+                    type="text"
+                    value={verifyCode}
+                    onChange={(e) => {
+                      setVerifyCode(e.target.value);
+                      setVerifyResult(null);
+                      setVerifyError("");
+                    }}
+                    placeholder="AJZ26-XXXX-XXXX"
+                    className={`${inputClass} font-mono uppercase tracking-wider`}
+                  />
+                </div>
+                {verifyError && (
+                  <p className="text-[11px] text-red-300">{verifyError}</p>
+                )}
+                <button type="submit" disabled={verifying} className={`${goldButtonClass} w-full`}>
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                  {verifying ? "Verifying…" : "Verify guest"}
+                </button>
+              </form>
+
+              {verifyResult && (
+                <div className="mt-4 rounded-xl border border-emerald-400/20 bg-emerald-400/[0.06] p-4">
+                  <div className="flex items-center justify-between">
+                    <p className="text-[9px] uppercase tracking-[0.2em] text-emerald-300">
+                      Verified guest
+                    </p>
+                    <ShieldCheck className="h-4 w-4 text-emerald-300" />
+                  </div>
+                  <p className="mt-3 font-serif text-lg font-light text-white/90">{verifyResult.name}</p>
+                  <p className="mt-0.5 text-xs text-white/45">{verifyResult.phone}</p>
+                  <p className="mt-3 font-mono text-xs tracking-wide text-[#d4af37]">
+                    {verifyResult.inviteCode}
+                  </p>
+                  <div className="mt-3 flex items-center justify-between border-t border-white/[0.06] pt-3 text-[10px] uppercase tracking-[0.14em]">
+                    <span className="text-white/35">Status</span>
+                    <span className={verifyResult.accepted ? "text-emerald-300" : "text-amber-300"}>
+                      {verifyResult.accepted ? "Confirmed" : "Pending"}
+                    </span>
+                  </div>
+                </div>
+              )}
             </section>
 
             <section className={`${cardClass} p-5 sm:p-6`}>
