@@ -40,7 +40,7 @@ VALUES (
   'To be announced',
   'To be announced',
   '/videos/hero.mp4',
-  'Reunited in brotherhood',
+  'Reunited in brotherhood - Premium e-invite experience by Àfárà Digital Solutions',
   'Your presence completes the frequency',
   'dark'
 ) ON CONFLICT (slug) DO NOTHING;

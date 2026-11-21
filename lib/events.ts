@@ -38,7 +38,7 @@ export const eventConfig: Omit<EventConfig, "id" | "createdAt" | "updatedAt"> = 
   venue: "To be announced",
   video: process.env.NEXT_PUBLIC_VIDEO_URL || "/videos/hero.mp4",
   heroImage: "/images/hero-poster.jpg",
-  kicker: "Reunited in brotherhood",
+  kicker: "Reunited in brotherhood - Premium e-invite experience by Àfárà Digital Solutions",
   closingNote: "Your presence completes the frequency",
   theme: "dark",
 };
