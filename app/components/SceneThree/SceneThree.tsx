@@ -227,7 +227,7 @@ export default function SceneThree({ data, initialCount }: { data: EventConfig; 
                   type="text"
                   autoComplete="name"
                   className={styles.input}
-                  placeholder="Your full name"
+                  placeholder="Enter your name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
@@ -244,7 +244,7 @@ export default function SceneThree({ data, initialCount }: { data: EventConfig; 
                   type="tel"
                   autoComplete="tel"
                   className={styles.input}
-                  placeholder="+234 800 000 0000"
+                  placeholder="080 1234 5678"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   required
