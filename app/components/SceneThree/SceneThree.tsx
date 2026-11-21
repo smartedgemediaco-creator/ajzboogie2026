@@ -19,7 +19,7 @@ const fadeUp = (delay: number = 0) => {
 
 const galleryImages = Array.from({ length: 10 }, (_, i) => {
   const label = String.fromCharCode(97 + i); // a, b, c...
-  return `/images/aja/${label}a.jpg`;
+  return `https://res.cloudinary.com/oyp2arv8/image/upload/f_jpg,q_auto/v1795165754/${label}a.jpg`;
 });
 
 export default function SceneThree({ data, initialCount }: { data: EventConfig; initialCount: number }) {
@@ -299,6 +299,28 @@ export default function SceneThree({ data, initialCount }: { data: EventConfig; 
           </div>
         </motion.div>
 
+        {/* Event Video */}
+        <motion.div {...fadeUp(1.2)} className={styles.videoSection}>
+          <h2 className={styles.galleryTitle}>Event Highlights</h2>
+          <div className={styles.videoWrapper}>
+            <video
+              ref={null}
+              className={styles.video}
+              autoPlay
+              playsInline
+              muted={true}
+              loop={true}
+              poster=""
+            >
+              <source src={process.env.NEXT_PUBLIC_VIDEO_URL || "/videos/hero.mp4"} type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          </div>
+          <p className={styles.videoCaption}>
+            AJZ 2026 — Reunited in Brotherhood
+          </p>
+        </motion.div>
+
         {/* Lightbox Modal */}
         {galleryOpen && (
           <div
@@ -327,7 +349,7 @@ export default function SceneThree({ data, initialCount }: { data: EventConfig; 
               </button>
               <img
                 src={galleryImages[galleryIndex]}
-                alt={`Gallery ${galleryIndex + 1}`}
+                alt={`AJB Oogie ${galleryIndex + 1}`}
                 className={styles.lightboxImage}
               />
               <button
