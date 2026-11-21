@@ -539,6 +539,21 @@
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  padding: 4px;
+  background: linear-gradient(135deg, #d4af37, #c49a2a, #0b0d13, #d4af37);
+  background-size: 200% 200%;
+  animation: goldGlow 4s ease infinite;
+}
+
+.videoContainer::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #d4af37, #c49a2a);
+  z-index: -1;
+  opacity: 0.6;
+  animation: pulseGold 3s ease-in-out infinite;
 }
 
 .video {
@@ -562,6 +577,12 @@
   .videoContainer {
     width: 100%;
     border-radius: 12px;
+    padding: 3px;
+  }
+
+  .videoContainer::before {
+    inset: -1px;
+    border-radius: 14px;
   }
 
   .video {
@@ -572,5 +593,25 @@
   .videoCaption {
     font-size: 0.875rem;
     margin-top: 0.75rem;
+  }
+}
+
+@keyframes goldGlow {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes pulseGold {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.02);
   }
 }
