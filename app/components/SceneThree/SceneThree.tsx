@@ -313,13 +313,16 @@ export default function SceneThree({ data, initialCount }: { data: EventConfig; 
             <video
               ref={null}
               className={styles.video}
-              autoPlay
+              controls
               playsInline
-              muted={true}
               loop={true}
               poster=""
+              preload="metadata"
             >
-              <source src={process.env.NEXT_PUBLIC_VIDEO_URL || "/videos/hero.mp4"} type="video/mp4" />
+              <source
+                src={`https://res.cloudinary.com/oyp2arv8/video/upload/f_mp4,vc:h264,ac:aac,q_auto/v1795165754/Ajz_Boogie_renewed.mp4`}
+                type="video/mp4"
+              />
               Your browser does not support the video tag.
             </video>
           </div>
