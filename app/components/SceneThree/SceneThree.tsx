@@ -312,18 +312,18 @@ export default function SceneThree({ data, initialCount }: { data: EventConfig; 
           <h2 className={styles.galleryTitle}>Event Highlights</h2>
           <div className={styles.videoWrapper}>
             <div className={styles.videoContainer}>
-              <video
-                ref={null}
-                className={styles.video}
-                controls
-                playsInline
-                loop={true}
-                poster=""
-                preload="metadata"
-                onPlay={() => setVideoPlaying(true)}
-                onPause={() => setVideoPlaying(false)}
-                onEnded={() => setVideoPlaying(false)}
-              >
+            <video
+              ref={null}
+              className={styles.video}
+              controls
+              playsInline
+              loop={false}
+              poster=""
+              preload="metadata"
+              onPlay={() => setVideoPlaying(true)}
+              onPause={() => setVideoPlaying(false)}
+              onEnded={() => setVideoPlaying(false)}
+            >
                 <source
                   src="https://res.cloudinary.com/oyp2arv8/video/upload/v1795165754/Ajz_Boogie_renewed.mp4"
                   type="video/mp4"
